@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welkom bij PromoView — nog één stap</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --obsidian:#0D0C0F;--carbon:#17151A;--promo-pink:#E84163;--hot-pink:#FF3B70;
+  --off-white:#F7F4F6;--text-dim:#A79FA9;--border:#2A262E;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--obsidian);color:var(--off-white);
+  font-family:'Inter',system-ui,sans-serif;font-size:17px;line-height:1.6;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background-image:radial-gradient(ellipse 60% 50% at 50% 110%,rgba(194,43,175,.14),transparent 65%);
+}
+.card{
+  background:var(--carbon);border:1px solid var(--border);border-radius:20px;
+  max-width:520px;width:100%;padding:44px 34px;text-align:center;
+}
+.check{
+  width:64px;height:64px;border-radius:50%;background:rgba(232,65,99,.12);
+  border:1px solid rgba(232,65,99,.45);display:flex;align-items:center;justify-content:center;
+  margin:0 auto 26px;color:var(--promo-pink);font-size:30px;font-weight:800;
+}
+h1{font-size:clamp(26px,5vw,34px);line-height:1.15;letter-spacing:-.02em;margin-bottom:14px}
+p{color:var(--text-dim);margin-bottom:10px}
+.steps{
+  text-align:left;margin:28px 0;border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);padding:20px 0;
+}
+.steps div{display:flex;gap:14px;padding:9px 0;font-size:16px}
+.steps b{color:var(--promo-pink);flex-shrink:0}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;background:var(--promo-pink);
+  color:#fff;text-decoration:none;font-weight:700;font-size:17px;
+  padding:16px 30px;border-radius:12px;margin-top:6px;
+}
+.btn:focus-visible{outline:3px solid var(--hot-pink);outline-offset:3px}
+.note{font-size:13px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="check">✓</div>
+  <h1>Je betaling is gelukt. Welkom bij PromoView!</h1>
+  <p>Nog één stap en dan gaan wij voor je aan de slag: het onboarding-formulier. Duurt 10 minuten — daarna is je systeem binnen 48 uur actief.</p>
+  <div class="steps">
+    <div><b>1</b><span>Vul het onboarding-formulier in: je niche, doelgroep en zes vergelijkbare accounts.</span></div>
+    <div><b>2</b><span>We koppelen je Instagram-account veilig, inclusief 2FA-check.</span></div>
+    <div><b>3</b><span>Binnen 48 uur is het systeem live — en jij gaat gewoon weer ondernemen.</span></div>
+  </div>
+  <a class="btn" id="onboardBtn" href="#">Start je onboarding →</a>
+  <p class="note">Vragen? We reageren binnen 24 uur — persoonlijk, geen ticketsysteem.</p>
+</div>
+<script>
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({ event: "payment_success", ts: Date.now() });
+document.getElementById("onboardBtn").addEventListener("click", () => {
+  window.dataLayer.push({ event: "onboarding_click", ts: Date.now() });
+});
+</script>
+</body>
+</html>

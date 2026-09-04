@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jouw groeiplan staat klaar — PromoView</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --obsidian:#0D0C0F;--carbon:#17151A;--promo-pink:#E84163;--hot-pink:#FF3B70;
+  --magenta:#C22BAF;--violet:#7A22C7;--off-white:#F7F4F6;--text-dim:#A79FA9;
+  --border:#2A262E;--border-pink:rgba(232,65,99,.45);--green:#4ADE80;--tp:#00B67A;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--obsidian);color:var(--off-white);font-family:'Inter',system-ui,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;background-image:radial-gradient(ellipse 65% 45% at 50% -10%,rgba(194,43,175,.13),transparent 60%),radial-gradient(ellipse 55% 40% at 50% 115%,rgba(232,65,99,.1),transparent 65%)}
+a{color:var(--hot-pink)}
+button{font-family:inherit}
+.wrap{max-width:660px;margin:0 auto;padding:0 20px}
+.topbar{padding:26px 0 8px;text-align:center;font-weight:800;letter-spacing:.28em;font-size:14px}
+.topbar b{border-bottom:3px solid var(--promo-pink);padding-bottom:4px}
+.badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border-pink);background:rgba(232,65,99,.07);color:var(--off-white);font-size:13px;font-weight:700;padding:8px 16px;border-radius:99px;margin-bottom:20px;letter-spacing:.04em}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+h1{font-size:clamp(28px,6.5vw,42px);line-height:1.12;letter-spacing:-.02em;font-weight:800;margin-bottom:12px}
+.sub{color:var(--text-dim);font-size:17px;margin-bottom:26px}
+.hero{text-align:center;padding:34px 0 10px}
+.plan{background:var(--carbon);border:1px solid var(--promo-pink);box-shadow:0 0 0 1px var(--promo-pink),0 16px 56px rgba(232,65,99,.16);border-radius:18px;padding:28px 26px;text-align:left;margin:10px 0 22px;position:relative}
+.plan-badge{position:absolute;top:-13px;left:24px;background:var(--promo-pink);color:#fff;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:99px}
+.plan-name{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:6px 0 8px}
+.price{font-size:46px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.price small{font-size:17px;color:var(--text-dim);font-weight:600}
+.fit{border-left:3px solid var(--promo-pink);background:rgba(232,65,99,.06);border-radius:0 10px 10px 0;padding:12px 16px;font-size:15px;margin:16px 0 18px}
+.fit b{color:var(--hot-pink)}
+ul.incl{list-style:none;margin:0 0 4px}
+ul.incl li{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:15px;color:var(--text-dim)}
+ul.incl li:last-child{border-bottom:none}
+ul.incl .tick{color:var(--promo-pink);font-weight:800;flex-shrink:0}
+ul.incl b{color:var(--off-white)}
+.guarantee{border:1px solid var(--tp);border-radius:12px;padding:15px 18px;margin:18px 0 0;background:rgba(0,182,122,.06);display:flex;gap:13px;align-items:flex-start;font-size:14px}
+.guarantee .shield{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--tp);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px}
+.guarantee b{display:block;font-size:14px}
+.guarantee span{font-size:13px;color:var(--text-dim)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--promo-pink);color:#fff;border:none;cursor:pointer;font-size:18px;font-weight:700;padding:18px 34px;border-radius:12px;text-decoration:none;width:100%;transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(232,65,99,.4)}
+.btn:focus-visible{outline:3px solid var(--hot-pink);outline-offset:3px}
+.btn .arrow{transition:transform .12s}
+.btn:hover .arrow{transform:translateX(3px)}
+.secure{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;color:var(--text-dim);font-size:13px}
+.risk{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;margin-top:12px;color:var(--text-dim);font-size:13px}
+.risk span{display:inline-flex;align-items:center;gap:6px}
+.risk .tick{color:var(--promo-pink);font-weight:700}
+.proof{margin:34px 0 10px}
+.proof .card{background:var(--carbon);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:left;margin-bottom:12px}
+.tp-stars{display:inline-flex;gap:2px}
+.tp-stars i{width:15px;height:15px;background:var(--tp);display:inline-flex;align-items:center;justify-content:center;font-style:normal}
+.tp-stars i svg{width:9px;height:9px;fill:#fff}
+.proof p{font-size:14px;line-height:1.55;margin:9px 0 8px}
+.proof .src{font-size:12px;color:var(--text-dim)}
+.proof .src b{color:var(--off-white)}
+.tp-line{text-align:center;font-size:13px;color:var(--text-dim);margin-top:6px}
+.tp-line b{color:var(--off-white)}
+.tp-line .tpstar{color:var(--tp)}
+.alt{margin:26px 0 10px;font-size:13px;text-align:center}
+.alt a{color:var(--text-dim);text-decoration:underline;text-underline-offset:3px}
+footer{padding:34px 0 110px;text-align:center;color:var(--text-dim);font-size:12px}
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(13,12,15,.93);backdrop-filter:blur(10px);border-top:1px solid var(--border);padding:12px 16px}
+.sticky .inner{max-width:660px;margin:0 auto}
+.sticky .btn{padding:15px 20px;font-size:16px}
+@media(min-width:900px){.sticky{display:none}footer{padding-bottom:40px}}
+.hidden{display:none}
+.tl{background:var(--carbon);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:26px 0 0;text-align:left}
+.tl .tl-kop{font-weight:800;font-size:16px;margin-bottom:14px}
+.tl .row{display:flex;gap:14px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
+.tl .row:last-child{border-bottom:none}
+.tl .when{flex-shrink:0;width:118px;font-weight:700;color:var(--hot-pink);font-size:13px}
+.tl .row span:last-child{color:var(--text-dim)}
+.prem-mini{background:var(--carbon);border:1px solid var(--border);border-left:3px solid var(--violet);border-radius:14px;padding:18px 20px;margin:26px 0 0;text-align:left}
+.prem-mini .pm-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.prem-mini .pm-name{font-weight:800;font-size:15px}
+.prem-mini .pm-price{font-weight:800;font-size:15px;color:var(--violet);filter:brightness(1.5)}
+.prem-mini p{font-size:13.5px;color:var(--text-dim);margin-bottom:10px}
+.prem-mini .pm-note{font-size:13px;border-top:1px solid var(--border);padding-top:10px;margin-bottom:10px}
+.prem-mini .pm-note b{color:var(--hot-pink)}
+.prem-mini a{font-size:13.5px;font-weight:600;color:var(--text-dim);text-decoration:underline;text-underline-offset:3px}
+.prem-mini a:hover{color:var(--off-white)}
+/* ── Evie chat-widget ── */
+.chat-fab{position:fixed;right:16px;bottom:86px;z-index:60;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--promo-pink),var(--magenta));border:none;cursor:pointer;box-shadow:0 8px 28px rgba(232,65,99,.45);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px}
+.chat-fab .odot{position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:var(--green);border:2px solid var(--obsidian)}
+@media(min-width:900px){.chat-fab{bottom:22px}}
+.chat-panel{position:fixed;right:16px;bottom:154px;z-index:61;width:min(370px,calc(100vw - 32px));max-height:min(560px,calc(100vh - 180px));background:var(--carbon);border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.55);display:none;flex-direction:column;overflow:hidden}
+@media(min-width:900px){.chat-panel{bottom:92px}}
+.chat-panel.open{display:flex}
+.chat-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:rgba(232,65,99,.05)}
+.chat-head .avi{position:relative;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--promo-pink),var(--violet));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex-shrink:0}
+.chat-head .avi .odot{position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid var(--carbon)}
+.chat-head .who{flex:1;min-width:0}
+.chat-head .nm{font-weight:700;font-size:15px}
+.chat-head .st{font-size:12px;color:var(--text-dim)}
+.chat-head .st .gr{color:var(--green);font-weight:600}
+.chat-head .x{background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;line-height:1;padding:4px}
+.chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5}
+.msg.evie{background:var(--obsidian);border:1px solid var(--border);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.user{background:var(--promo-pink);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.msg a{color:var(--hot-pink);font-weight:600}
+.typing{align-self:flex-start;display:flex;gap:4px;padding:12px 14px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--text-dim);animation:tp 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes tp{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+.chip-row{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 10px}
+.qchip{background:var(--obsidian);border:1px dashed var(--border-pink);color:var(--off-white);padding:7px 12px;border-radius:99px;font-size:12.5px;font-weight:600;cursor:pointer}
+.qchip:hover{background:rgba(232,65,99,.1)}
+.chat-input{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border)}
+.chat-input input{flex:1;background:var(--obsidian);border:1px solid var(--border);border-radius:99px;padding:11px 16px;color:var(--off-white);font-size:14px;font-family:inherit}
+.chat-input input:focus{outline:none;border-color:var(--promo-pink)}
+.chat-input button{width:42px;height:42px;border-radius:50%;background:var(--promo-pink);border:none;color:#fff;font-size:17px;cursor:pointer;flex-shrink:0}
+.chat-note{padding:0 16px 12px;font-size:11px;color:var(--text-dim);text-align:center}
+.evimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+</style>
+</head>
+<body>
+
+<div class="topbar"><b>PROMO</b>VIEW</div>
+
+<div class="wrap hero">
+  <span class="badge"><span class="dot"></span> Jouw groeiplan staat klaar</span>
+
+  <!-- Groeisysteem-advies -->
+  <div id="standaardBlok">
+    <h1 id="kop">Goed nieuws — dit is jouw route naar dagelijkse zichtbaarheid.</h1>
+    <p class="sub" id="persoonlijk">Op basis van je antwoorden past het PromoView Groeisysteem het beste bij jouw bedrijf.</p>
+
+    <div class="plan">
+      <div class="plan-badge">Jouw advies</div>
+      <div class="plan-name">PromoView Groeisysteem</div>
+      <div class="price">€190<small>/maand</small></div>
+      <div class="fit" id="fitRegel"><b>Waarom dit past:</b> dagelijkse zichtbaarheid bij jouw doelgroep, volledig uit handen.</div>
+      <ul class="incl">
+        <li><span class="tick">✓</span><span><b>Volledig beheerde Instagram-groei</b> — dagelijks zichtbaar bij jouw doelgroep. Jij doet niets.</span></li>
+        <li><span class="tick">✓</span><span><b>Doelgroeponderzoek op maat</b> (t.w.v. €250) — start direct na je betaling.</span></li>
+        <li><span class="tick">✓</span><span><b>Je eigen groei-dashboard</b> — volg je groei wanneer jij wilt.</span></li>
+        <li><span class="tick">✓</span><span><b>Doorlopende AI-optimalisatie</b> op de kwaliteit van je volgers.</span></li>
+        <li><span class="tick">✓</span><span><b>Persoonlijk accountmanagement</b> — reactie binnen 24 uur.</span></li>
+      </ul>
+      <div class="guarantee">
+        <div class="shield">14</div>
+        <div><b>Probeer PromoView 14 dagen zonder risico</b><span>Niet tevreden? Één berichtje binnen 14 dagen en je krijgt je geld terug — geen vragen, geen gedoe.</span></div>
+      </div>
+    </div>
+
+    <button class="btn" id="payBtn" onclick="startGroei('main')">Begin je groei direct <span class="arrow">→</span></button>
+    <div class="secure">🔒 Veilig betalen via Stripe — iDEAL, Bancontact of creditcard</div>
+    <div class="risk">
+      <span><span class="tick">✓</span> Binnen 48 uur actief</span>
+      <span><span class="tick">✓</span> Maandelijks opzegbaar, per direct</span>
+      <span><span class="tick">✓</span> Geen setupkosten</span>
+    </div>
+    <div class="tl">
+      <div class="tl-kop">Wat gebeurt er na je betaling?</div>
+      <div class="row"><span class="when">Vandaag</span><span>Je rekent af en vult in ±10 minuten je doelgroep en Instagram-account in.</span></div>
+      <div class="row"><span class="when">Binnen 1 werkdag</span><span>Ons team controleert je targeting en stelt je account veilig in (incl. 2FA).</span></div>
+      <div class="row"><span class="when">Binnen 48 uur</span><span>PromoView gaat live — je bent dagelijks zichtbaar bij jouw doelgroep.</span></div>
+      <div class="row"><span class="when">Eerste dagen</span><span>De eerste profielbezoeken en nieuwe volgers komen doorgaans al binnen.</span></div>
+      <div class="row"><span class="when">Doorlopend</span><span>We monitoren je groei en sturen de targeting bij — jij kunt elk moment stoppen of aanpassen.</span></div>
+    </div>
+    <div class="prem-mini">
+      <div class="pm-head"><span class="pm-name">Premium Groeitraject</span><span class="pm-price">€3.000 eenmalig</span></div>
+      <p>Alles uit het Groeisysteem, 6 maanden lang — plus persoonlijke strategie-sessie, volledige profiel-optimalisatie en prioriteit bij het team. Alleen op aanvraag.</p>
+      <div class="pm-note"><b>Ons advies voor jou blijft het Groeisysteem.</b> Daarmee start je vandaag voor €190 per maand, zonder groot bedrag vooraf — maandelijks opzegbaar en met 14 dagen garantie.</div>
+      <a href="#" onclick="premiumInfo();return false" id="premiumLink">Toch interesse in Premium? Vraag het vrijblijvend aan →</a>
+    </div>
+  </div>
+
+  <!-- Mini social proof -->
+  <div class="proof">
+    <div class="card">
+      <span class="tp-stars" data-tp5></span>
+      <p>"In het begin was ik sceptisch, maar al snel ondervond ik dat ze echt doen wat ze zeggen."</p>
+      <div class="src"><b>Via Trustpilot</b></div>
+    </div>
+    <div class="card">
+      <span class="tp-stars" data-tp5></span>
+      <p>"Fijn dat er constant persoonlijk contact is en dat ik elk moment kan stoppen of iets aanpassen."</p>
+      <div class="src"><b>Via Trustpilot</b></div>
+    </div>
+    <div class="tp-line"><span class="tpstar">★</span> <b>~4,8 op Trustpilot</b> · 100+ reviews · 500+ bedrijven · 3.000.000+ volgers gegenereerd</div>
+  </div>
+</div>
+
+<footer>PROMOVIEW · promo-view.io · De Nieuwe Erven 3, 5431NV Cuijk · KVK 81663285</footer>
+
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" aria-label="Chat met Evie, AI-assistent van PromoView">💬<span class="odot"></span></button>
+
+<div class="chat-panel" id="chatPanel" role="dialog" aria-label="Chat met Evie">
+  <div class="chat-head">
+    <div class="avi">E<span class="odot"></span></div>
+    <div class="who">
+      <div class="nm">Evie van PromoView</div>
+      <div class="st"><span class="gr">● Online</span> · AI-assistent, antwoordt direct</div>
+    </div>
+    <button class="x" onclick="toggleChat()" aria-label="Sluiten">×</button>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="chip-row" id="chipRow"></div>
+  <form class="chat-input" id="chatForm">
+    <input type="text" id="chatText" placeholder="Stel je vraag aan Evie…" autocomplete="off">
+    <button type="submit" aria-label="Versturen">↑</button>
+  </form>
+  <div class="chat-note">Evie is een AI-assistent. Liever een mens? Vraag om WhatsApp-contact.</div>
+</div>
+
+<div class="sticky" id="stickyBar">
+  <div class="inner"><button class="btn" onclick="startGroei('sticky')">Begin je groei direct →</button></div>
+</div>
+
+<script>
+const CONFIG = {
+  STRIPE_PAYMENT_LINK: "",
+  LEAD_WEBHOOK_URL: ""
+};
+
+const TP_STAR = '<i><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8z"/></svg></i>';
+document.querySelectorAll("[data-tp5]").forEach(el => el.innerHTML = TP_STAR.repeat(5));
+
+window.dataLayer = window.dataLayer || [];
+function track(event, params = {}) {
+  const payload = { event, ...params, ts: Date.now() };
+  window.dataLayer.push(payload);
+  if (!CONFIG.STRIPE_PAYMENT_LINK) console.log("[track]", payload);
+}
+
+let lead = null;
+try { lead = JSON.parse(localStorage.getItem("pv_lead")); } catch (_) {}
+track("page_view", { page: "start", version: "v11-ab", lead_id: lead ? lead.lead_id : null, variant: lead ? lead.ab_variant : null });
+
+if (!lead) {
+  // Direct bezoek zonder pakket-check: generieke kop + terugverwijzing
+  document.getElementById("kop").textContent = "Begin vandaag met dagelijkse zichtbaarheid.";
+  document.getElementById("persoonlijk").innerHTML = 'Het PromoView Groeisysteem — volledig beheerd, binnen 48 uur actief. Wil je eerst persoonlijk advies? <a href="index.html">Doe de gratis pakket-check</a>.';
+} else {
+  if (lead.name) document.getElementById("kop").textContent = `${lead.name}, dit is jouw route naar dagelijkse zichtbaarheid.`;
+  document.getElementById("persoonlijk").textContent = `Op basis van je antwoorden past het PromoView Groeisysteem het beste bij jouw bedrijf.`;
+  const nicheTxt = lead.niche ? lead.niche.toLowerCase() : "jouw branche";
+  document.getElementById("fitRegel").innerHTML =
+    `<b>Waarom dit past:</b> met ${lead.followers || "jouw huidige"} volgers in de categorie ${nicheTxt} haal je hier het meeste uit — dagelijkse zichtbaarheid bij jouw doelgroep, de eerste volgers doorgaans binnen 48 uur.`;
+}
+
+function startGroei(source) {
+  track("checkout_start", { source, lead_id: lead ? lead.lead_id : null });
+  if (!CONFIG.STRIPE_PAYMENT_LINK) {
+    document.getElementById("payBtn").textContent = "⚠ Stripe Payment Link nog niet ingesteld (zie CONFIG)";
+    return;
+  }
+  const url = new URL(CONFIG.STRIPE_PAYMENT_LINK);
+  if (lead) {
+    url.searchParams.set("prefilled_email", lead.email);
+    url.searchParams.set("client_reference_id", lead.lead_id);
+  }
+  track("payment_redirect", { lead_id: lead ? lead.lead_id : null });
+  location.href = url.toString();
+}
+
+/* ── Evie: AI-assistent chat ────────────────── */
+const WHATSAPP = "https://wa.me/31685888134";
+const QA = [
+  { chip: "Kan ik altijd opzeggen?", keys: ["opzeg", "stoppen", "contract", "vast", "pauze"], a: "Ja! Het Groeisysteem is maandelijks opzegbaar, per direct. Je kunt ook pauzeren (bijvoorbeeld per seizoen). Opzeggingen bevestigen we altijd schriftelijk met einddatum en laatste factuurmoment — geen kleine lettertjes." },
+  { chip: "Is dit veilig voor mijn account?", keys: ["veilig", "hack", "2fa", "blokk", "risico", "account"], a: "Ja. Bij de onboarding stellen we 2FA in en leggen we vooraf precies uit welke meldingen je van Instagram kunt zien en waarom. Geen verrassingen — veiligheid is stap 1 van onze onboarding." },
+  { chip: "Zijn dit echte volgers?", keys: ["fake", "bot", "echte", "nep", "gekocht"], a: "100% echte volgers. Groei komt doordat relevante mensen jouw profiel organisch ontdekken — we kopen nooit accounts. Klanten benoemen het letterlijk in hun Trustpilot-reviews: \"geen bots, maar potentiële klanten\"." },
+  { chip: "Hoe snel zie ik resultaat?", keys: ["snel", "wanneer", "resultaat", "duurt", "48"], a: "Binnen 48 uur na je onboarding is het systeem actief, en de eerste nieuwe volgers komen doorgaans al in de eerste dagen binnen. Resultaten verschillen wel per account en niche — daarom sturen we doorlopend bij." },
+  { chip: "Hoe werkt de garantie?", keys: ["garantie", "geld terug", "terugbetaal", "refund"], a: "Simpel: 14 dagen geld-terug-garantie, geen vragen. Ben je in de eerste twee weken niet tevreden, dan stuur je één berichtje naar je contactpersoon en krijg je je geld terug." },
+  { chip: "Wat gebeurt er na mijn betaling?", keys: ["betaling", "daarna", "onboarding", "start", "beginnen"], a: "Direct na je betaling kom je op het onboarding-formulier (10 minuten): je niche, doelgroep en zes vergelijkbare accounts. Daarna koppelen we je account veilig en ben je binnen 48 uur live. Jij hoeft verder niets te doen." },
+  { chip: null, keys: ["prijs", "kost", "duur", "190", "tarief", "3000", "premium"], a: "Ons advies is het Groeisysteem: €190 per maand — dat is €6,30 per dag, maandelijks opzegbaar en zonder setupkosten. Daarmee start je vandaag zonder groot bedrag vooraf. Er is ook een Premium Groeitraject van €3.000 eenmalig, maar dat is alleen op aanvraag — voor vrijwel iedereen is het Groeisysteem de beste start." },
+  { chip: null, keys: ["mens", "whatsapp", "bellen", "telefoon", "contact", "iemand spreken"], a: `Natuurlijk! Je kunt ons team direct bereiken via <a href="${WHATSAPP}" target="_blank" rel="noopener" onclick="track('chat_whatsapp_click')">WhatsApp</a> — we reageren binnen 24 uur, meestal veel sneller. Of mail naar info@promo-view.nl.` }
+];
+const chatBody = document.getElementById("chatBody");
+const chipRow = document.getElementById("chipRow");
+let chatOpened = false;
+
+function toggleChat() {
+  const p = document.getElementById("chatPanel");
+  const open = !p.classList.contains("open");
+  p.classList.toggle("open", open);
+  if (open && !chatOpened) {
+    chatOpened = true;
+    track("chat_open", { lead_id: lead ? lead.lead_id : null });
+    evieSay(`Hoi${lead && lead.name ? " " + lead.name : ""}! 👋 Ik ben Evie, de AI-assistent van PromoView. Ik ben online en beantwoord je vragen direct — klik een vraag aan of typ je eigen vraag.`);
+    renderChips();
+  }
+}
+function renderChips() {
+  chipRow.innerHTML = QA.filter(q => q.chip).map((q, i) => `<button type="button" class="qchip" data-i="${QA.indexOf(q)}">✦ ${q.chip}</button>`).join("");
+  chipRow.querySelectorAll(".qchip").forEach(c => c.addEventListener("click", () => {
+    const qa = QA[+c.dataset.i];
+    userSay(qa.chip);
+    track("chat_question", { q: qa.chip });
+    evieTyping(() => evieSay(qa.a));
+  }));
+}
+function bubble(cls, htmlTxt) {
+  const d = document.createElement("div");
+  d.className = "msg " + cls;
+  d.innerHTML = htmlTxt;
+  chatBody.appendChild(d);
+  chatBody.scrollTop = chatBody.scrollHeight;
+  return d;
+}
+function userSay(t) { bubble("user", t.replace(/</g, "&lt;")); }
+function evieSay(t) { bubble("evie", t); }
+function evieTyping(done) {
+  const d = document.createElement("div");
+  d.className = "typing";
+  d.innerHTML = "<i></i><i></i><i></i>";
+  chatBody.appendChild(d);
+  chatBody.scrollTop = chatBody.scrollHeight;
+  setTimeout(() => { d.remove(); done(); }, 700 + Math.random() * 500);
+}
+document.getElementById("chatForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const inp = document.getElementById("chatText");
+  const t = inp.value.trim();
+  if (!t) return;
+  inp.value = "";
+  userSay(t);
+  track("chat_freetext", { q: t.slice(0, 120) });
+  const lower = t.toLowerCase();
+  const hit = QA.find(q => q.keys.some(k => lower.includes(k)));
+  evieTyping(() => {
+    if (hit) { evieSay(hit.a); }
+    else {
+      evieSay(`Goede vraag! Die beantwoordt ons team het beste persoonlijk. Stuur ons een berichtje via <a href="${WHATSAPP}" target="_blank" rel="noopener" onclick="track('chat_whatsapp_click')">WhatsApp</a> — we reageren binnen 24 uur, meestal veel sneller. Of kijk in de FAQ op de vorige pagina.`);
+    }
+  });
+});
+
+function premiumInfo() {
+  if (CONFIG.LEAD_WEBHOOK_URL && lead) {
+    fetch(CONFIG.LEAD_WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...lead, lead_type: "premium_aanvraag", recommended_package: "premium_3000" }) }).catch(() => {});
+  }
+  track("premium_request", { lead_id: lead ? lead.lead_id : null, source: "start-page" });
+  document.getElementById("premiumLink").outerHTML = '<span style="color:var(--green);font-weight:600">✓ Premium-aanvraag genoteerd — we bellen je binnen 24 uur.</span>';
+}
+</script>
+</body>
+</html>
