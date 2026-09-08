@@ -11,7 +11,7 @@
 <style>
 :root{
   --obsidian:#0D0C0F;--carbon:#17151A;--promo-pink:#E84163;--hot-pink:#FF3B70;
-  --off-white:#F7F4F6;--text-dim:#A79FA9;--border:#2A262E;
+  --off-white:#F7F4F6;--text-dim:#A79FA9;--border:#2A262E;--green:#4ADE80;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -25,9 +25,9 @@ body{
   max-width:520px;width:100%;padding:44px 34px;text-align:center;
 }
 .check{
-  width:64px;height:64px;border-radius:50%;background:rgba(232,65,99,.12);
-  border:1px solid rgba(232,65,99,.45);display:flex;align-items:center;justify-content:center;
-  margin:0 auto 26px;color:var(--promo-pink);font-size:30px;font-weight:800;
+  width:64px;height:64px;border-radius:50%;background:rgba(74,222,128,.12);
+  border:1px solid rgba(74,222,128,.45);display:flex;align-items:center;justify-content:center;
+  margin:0 auto 26px;color:var(--green);font-size:30px;font-weight:800;
 }
 h1{font-size:clamp(26px,5vw,34px);line-height:1.15;letter-spacing:-.02em;margin-bottom:14px}
 p{color:var(--text-dim);margin-bottom:10px}
@@ -38,32 +38,56 @@ p{color:var(--text-dim);margin-bottom:10px}
 .steps div{display:flex;gap:14px;padding:9px 0;font-size:16px}
 .steps b{color:var(--promo-pink);flex-shrink:0}
 .btn{
-  display:inline-flex;align-items:center;gap:10px;background:var(--promo-pink);
-  color:#fff;text-decoration:none;font-weight:700;font-size:17px;
-  padding:16px 30px;border-radius:12px;margin-top:6px;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--promo-pink);
+  color:#fff;text-decoration:none;font-weight:800;font-size:17px;
+  padding:16px 30px;border-radius:12px;margin-top:6px;width:100%;
 }
 .btn:focus-visible{outline:3px solid var(--hot-pink);outline-offset:3px}
 .note{font-size:13px;margin-top:20px}
+.note a{color:var(--text-dim)}
 </style>
 </head>
 <body>
 <div class="card">
   <div class="check">✓</div>
   <h1>Je betaling is gelukt. Welkom bij PromoView!</h1>
-  <p>Nog één stap en dan gaan wij voor je aan de slag: het onboarding-formulier. Duurt 10 minuten — daarna is je systeem binnen 48 uur actief.</p>
+  <p>Nog één stap en dan gaan wij voor je aan de slag: het onboarding-formulier. Duurt tien minuten — daarna is je systeem binnen 48 uur actief.</p>
   <div class="steps">
-    <div><b>1</b><span>Vul het onboarding-formulier in: je niche, doelgroep en zes vergelijkbare accounts.</span></div>
+    <div><b>1</b><span>Vul het onboarding-formulier in: je niche, je regio en zes vergelijkbare accounts.</span></div>
     <div><b>2</b><span>We koppelen je Instagram-account veilig, inclusief 2FA-check.</span></div>
     <div><b>3</b><span>Binnen 48 uur is het systeem live — en jij gaat gewoon weer ondernemen.</span></div>
   </div>
   <a class="btn" id="onboardBtn" href="#">Start je onboarding →</a>
-  <p class="note">Vragen? We reageren binnen 24 uur — persoonlijk, geen ticketsysteem.</p>
+  <p class="note">Vragen? We reageren binnen 24 uur — persoonlijk, geen ticketsysteem.<br>
+    <a href="mailto:info@promo-view.nl">info@promo-view.nl</a></p>
 </div>
 <script>
+/* Zet hier de URL van het onboarding-formulier zodra je hem hebt.
+   Blijft dit leeg, dan valt de knop automatisch terug op WhatsApp,
+   zodat een klant die net betaald heeft nooit op een dood einde landt. */
+const CONFIG = {
+  ONBOARDING_URL: "",
+  WHATSAPP: "https://wa.me/31685888134"
+};
+
 window.dataLayer = window.dataLayer || [];
-window.dataLayer.push({ event: "payment_success", ts: Date.now() });
-document.getElementById("onboardBtn").addEventListener("click", () => {
-  window.dataLayer.push({ event: "onboarding_click", ts: Date.now() });
+function track(event, params) {
+  window.dataLayer.push(Object.assign({ event: event, ts: Date.now() }, params || {}));
+}
+track("payment_success");
+
+var btn = document.getElementById("onboardBtn");
+if (CONFIG.ONBOARDING_URL) {
+  btn.href = CONFIG.ONBOARDING_URL;
+} else {
+  btn.href = CONFIG.WHATSAPP + "?text=" + encodeURIComponent("Hoi! Ik heb net betaald voor het PromoView Groeisysteem en wil graag de onboarding starten.");
+  btn.target = "_blank";
+  btn.rel = "noopener";
+  btn.textContent = "Start je onboarding via WhatsApp →";
+  track("onboarding_fallback_whatsapp");
+}
+btn.addEventListener("click", function () {
+  track("onboarding_click", { route: CONFIG.ONBOARDING_URL ? "formulier" : "whatsapp" });
 });
 </script>
 </body>
