@@ -1,3 +1,3 @@
 # directpayments
-Landingspagina PromoView — v11.4
+Landingspagina PromoView v11.4
 new version
