@@ -257,8 +257,27 @@ footer{border-top:1px solid var(--border);margin-top:40px;padding:26px 0 120px;t
 <script>
 const CONFIG = {
   STRIPE_PAYMENT_LINK: "https://buy.stripe.com/14A9AVd2t5yQ8OK1uPb7y08",
-  LEAD_WEBHOOK_URL: ""
+  PAGE_VERSION: "v13.0-light",
+  POSTHOG_KEY: "PLAATS_HIER_JE_POSTHOG_PROJECT_KEY",
+  POSTHOG_HOST: "https://eu.i.posthog.com"
 };
+
+(function () {
+  if (!CONFIG.POSTHOG_KEY || CONFIG.POSTHOG_KEY.indexOf("PLAATS_HIER") === 0) return;
+  var t = document.createElement("script");
+  t.src = "https://cdn.jsdelivr.net/npm/posthog-js@1.194.4/dist/array.full.js";
+  t.async = true;
+  t.onload = function () { window.posthog.init(CONFIG.POSTHOG_KEY, { api_host: CONFIG.POSTHOG_HOST }); };
+  document.head.appendChild(t);
+})();
+const PV_START = Date.now();
+let PV_ACTIVE_MS = 0, PV_LAST_TICK = Date.now(), PV_VISIBLE = !document.hidden;
+setInterval(function () { if (PV_VISIBLE) PV_ACTIVE_MS += Date.now() - PV_LAST_TICK; PV_LAST_TICK = Date.now(); }, 1000);
+document.addEventListener("visibilitychange", function () { PV_VISIBLE = !document.hidden; PV_LAST_TICK = Date.now(); });
+function pvBaseProps() {
+  var l = null; try { l = JSON.parse(localStorage.getItem("pv_lead")); } catch (_) {}
+  return { page_version: CONFIG.PAGE_VERSION, device: innerWidth < 768 ? "mobile" : "desktop", elapsed_ms: Date.now() - PV_START, active_ms: PV_ACTIVE_MS, lead_id: l ? l.lead_id : null };
+}
 
 /* Elke case is een echte klantvideo, met de branche die er daadwerkelijk bij hoort. */
 const CASES = {
@@ -293,8 +312,10 @@ const TP_STAR = '<i><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.
 
 window.dataLayer = window.dataLayer || [];
 function track(event, params = {}) {
-  const payload = { event, ...params, ts: Date.now() };
+  const props = Object.assign({}, pvBaseProps(), params);
+  const payload = { event, ...props, ts: Date.now() };
   window.dataLayer.push(payload);
+  try { window.posthog && window.posthog.capture(event, props); } catch (_) {}
   if (!CONFIG.STRIPE_PAYMENT_LINK) console.log("[track]", payload);
 }
 
@@ -386,6 +407,7 @@ addEventListener("scroll", function () {
 }, { passive: true });
 
 function startGroei(source) {
+  track("checkout_started", { source: source, niche: niche, lead_id: lead ? lead.lead_id : null });
   track("checkout_start", { source: source, niche: niche, lead_id: lead ? lead.lead_id : null });
   if (!CONFIG.STRIPE_PAYMENT_LINK) {
     document.getElementById("payBtn").textContent = "⚠ Stripe Payment Link nog niet ingesteld (zie CONFIG)";
@@ -468,6 +490,27 @@ document.getElementById("chatForm").addEventListener("submit", function (e) {
     else evieSay('Goede vraag! Die beantwoordt ons team het beste persoonlijk. Stuur een berichtje via <a href="' + WHATSAPP + '" target="_blank" rel="noopener" onclick="track(\'chat_whatsapp_click\')">WhatsApp</a>. We reageren binnen 24 uur.');
   });
 });
+
+(function () {
+  document.querySelectorAll("section, .hero").forEach(function (sec, idx) {
+    var fired = false, timer = null;
+    var name = sec.id || sec.className.split(" ")[0] || ("section_" + idx);
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        if (en.isIntersecting) {
+          if (!fired && !timer) timer = setTimeout(function () { fired = true; track("section_viewed", { section: name }); io.disconnect(); }, 2000);
+        } else if (timer) { clearTimeout(timer); timer = null; }
+      });
+    }, { threshold: .4 });
+    io.observe(sec);
+  });
+})();
+document.addEventListener("click", function (e) {
+  var btn = e.target.closest(".btn,[data-cta]");
+  if (!btn) return;
+  var sec = btn.closest("section, .hero");
+  track("cta_clicked", { label: (btn.dataset.cta || btn.textContent || "").trim().slice(0, 60), section: sec ? (sec.id || sec.className.split(" ")[0]) : null });
+}, true);
 </script>
 </body>
 </html>
