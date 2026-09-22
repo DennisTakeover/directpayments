@@ -1,0 +1,10 @@
+{
+  "name": "promoview-landing",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PromoView landingspagina + funnel-API (Vercel Functions)",
+  "dependencies": {
+    "stripe": "^17.4.0",
+    "posthog-node": "^4.3.1"
+  }
+}

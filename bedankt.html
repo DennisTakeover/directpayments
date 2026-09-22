@@ -69,14 +69,46 @@ p{color:var(--text-dim);margin-bottom:10px}
    zodat een klant die net betaald heeft nooit op een dood einde landt. */
 const CONFIG = {
   ONBOARDING_URL: "",
-  WHATSAPP: "https://wa.me/31685888134"
+  WHATSAPP: "https://wa.me/31685888134",
+  POSTHOG_KEY: "PLAATS_HIER_JE_POSTHOG_PROJECT_KEY",
+  POSTHOG_HOST: "https://eu.i.posthog.com"
 };
+
+(function () {
+  if (!CONFIG.POSTHOG_KEY || CONFIG.POSTHOG_KEY.indexOf("PLAATS_HIER") === 0) return;
+  var t = document.createElement("script");
+  t.src = "https://cdn.jsdelivr.net/npm/posthog-js@1.194.4/dist/array.full.js";
+  t.async = true;
+  t.onload = function () { window.posthog.init(CONFIG.POSTHOG_KEY, { api_host: CONFIG.POSTHOG_HOST }); };
+  document.head.appendChild(t);
+})();
 
 window.dataLayer = window.dataLayer || [];
 function track(event, params) {
-  window.dataLayer.push(Object.assign({ event: event, ts: Date.now() }, params || {}));
+  var props = params || {};
+  window.dataLayer.push(Object.assign({ event: event, ts: Date.now() }, props));
+  try { window.posthog && window.posthog.capture(event, props); } catch (_) {}
 }
-track("payment_success");
+track("bedankt_page_viewed");
+
+// Een bezoek aan deze pagina is nog geen bevestigde betaling: pas als de
+// backend de Stripe-sessie heeft geverifieerd, tellen we `purchase_completed`.
+// Vereist dat de Stripe Payment Link (Dashboard > Payment Links > bewerken >
+// "Na betaling") doorstuurt naar deze pagina met ?session_id={CHECKOUT_SESSION_ID}.
+(function () {
+  var sessionId = new URLSearchParams(location.search).get("session_id");
+  if (!sessionId) { track("purchase_unconfirmed", { reason: "missing_session_id" }); return; }
+  fetch("/api/verify-payment?session_id=" + encodeURIComponent(sessionId))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.ok && d.paid) {
+        track("purchase_completed", { amount_total: d.amount_total, currency: d.currency, lead_id: d.lead_id });
+      } else {
+        track("purchase_unconfirmed", { reason: "not_paid" });
+      }
+    })
+    .catch(function () { track("purchase_unconfirmed", { reason: "verify_failed" }); });
+})();
 
 var btn = document.getElementById("onboardBtn");
 if (CONFIG.ONBOARDING_URL) {
