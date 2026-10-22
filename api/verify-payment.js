@@ -1,6 +1,7 @@
 const Stripe = require("stripe");
 const { PostHog } = require("posthog-node");
 const { sendMetaEvent, clientIp } = require("./_lib/meta");
+const { sendToGhl } = require("./_lib/ghl");
 
 let stripe = null;
 function getStripe() {
@@ -59,6 +60,26 @@ module.exports = async (req, res) => {
       // user agent en fbp/fbc voor een betere match. Zelfde event_id als de
       // pixel op bedankt.html en /api/stripe-webhook -> telt als één aankoop.
       const cd = session.customer_details || {};
+      // GoHighLevel "PV - Betaald": vanaf de bedankpagina, na verificatie bij
+      // Stripe (een los bezoek aan bedankt.html telt dus nooit als betaling).
+      // Staat de Stripe-webhook ingesteld, dan stuurt die het seintje al en
+      // slaan we het hier over om dubbele meldingen in GHL te voorkomen.
+      if (!process.env.STRIPE_WEBHOOK_SECRET) {
+        await sendToGhl("payment", {
+          event: "payment_completed",
+          payment_status: "betaald",
+          lead_id: leadId,
+          email: cd.email || session.customer_email || null,
+          phone: cd.phone || null,
+          name: cd.name || null,
+          amount: session.amount_total ? session.amount_total / 100 : null,
+          currency: session.currency ? String(session.currency).toUpperCase() : "EUR",
+          stripe_session_id: session.id,
+          stripe_customer_id: session.customer || null,
+          paid_at: new Date((session.created || Date.now() / 1000) * 1000).toISOString(),
+          source: "bedankt_pagina",
+        });
+      }
       await sendMetaEvent({
         eventName: "Purchase",
         eventId: `purchase_${session.id}`,
