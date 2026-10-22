@@ -1,12 +1,10 @@
-// GoHighLevel inbound webhook. Leads gaan naar GHL_WEBHOOK_URL.
-// Betalingen gaan naar GHL_PAYMENT_WEBHOOK_URL als die bestaat (aparte
-// workflow "Betaald"), anders naar dezelfde GHL_WEBHOOK_URL met
-// event: "payment_completed", zodat één workflow op het veld kan filteren.
+// GoHighLevel inbound webhooks.
+// - Leads           -> GHL_WEBHOOK_URL         (workflow "PV - Nieuwe lead")
+// - Betalingen      -> GHL_PAYMENT_WEBHOOK_URL (workflow "PV - Betaald")
+// Bewust geen terugval van betalingen naar de lead-URL: dan zou een betaalde
+// klant in de lead-workflow belanden en alsnog een beltaak krijgen.
 async function sendToGhl(kind, payload) {
-  const url =
-    kind === "payment"
-      ? process.env.GHL_PAYMENT_WEBHOOK_URL || process.env.GHL_WEBHOOK_URL
-      : process.env.GHL_WEBHOOK_URL;
+  const url = kind === "payment" ? process.env.GHL_PAYMENT_WEBHOOK_URL : process.env.GHL_WEBHOOK_URL;
   if (!url) return { ok: false, error: "ghl_webhook_url_not_configured" };
 
   const ctrl = new AbortController();
