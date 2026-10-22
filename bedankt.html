@@ -75,14 +75,8 @@ const CONFIG = {
   POSTHOG_HOST: "https://eu.i.posthog.com"
 };
 
-(function () {
-  if (!CONFIG.POSTHOG_KEY || CONFIG.POSTHOG_KEY.indexOf("PLAATS_HIER") === 0) return;
-  var t = document.createElement("script");
-  t.src = "https://cdn.jsdelivr.net/npm/posthog-js@1.194.4/dist/array.full.js";
-  t.async = true;
-  t.onload = function () { window.posthog.init(CONFIG.POSTHOG_KEY, { api_host: CONFIG.POSTHOG_HOST }); };
-  document.head.appendChild(t);
-})();
+CONFIG.PAGE_VERSION = "bedankt-v2";
+if(CONFIG.POSTHOG_KEY&&CONFIG.POSTHOG_KEY.indexOf("PLAATS_HIER")!==0){!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags on onFeatureFlags onSessionId identify setPersonProperties group resetGroups reset get_distinct_id get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init(CONFIG.POSTHOG_KEY,{api_host:CONFIG.POSTHOG_HOST,person_profiles:"identified_only",capture_pageview:!0,capture_pageleave:!0,autocapture:!0,enable_heatmaps:!0,capture_dead_clicks:!0,session_recording:{maskAllInputs:!0,maskTextSelector:"[data-ph-mask]"}});posthog.register({funnel_page:"bedankt",page_version:CONFIG.PAGE_VERSION});try{var _l=JSON.parse(localStorage.getItem("pv_lead")||"null");if(_l&&_l.lead_id)posthog.identify(_l.lead_id)}catch(e){}}
 
 
 /* ── Meta Pixel ── (zelfde ID als index.html; leeg = uit) */
@@ -124,6 +118,7 @@ track("bedankt_page_viewed");
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d && d.ok && d.paid) {
+        try { if (d.lead_id) posthog.identify(d.lead_id, { klant: true }); } catch (_) {}
         track("purchase_completed", { amount_total: d.amount_total, currency: d.currency, lead_id: d.lead_id });
         // Zelfde eventID als de server (purchase_<session_id>): Meta telt dit als één aankoop.
         try { fbq("track", "Purchase", { value: d.amount_total || 190, currency: String(d.currency || "eur").toUpperCase(), content_name: "PromoView Groeisysteem" }, { eventID: "purchase_" + sessionId }); } catch (_) {}

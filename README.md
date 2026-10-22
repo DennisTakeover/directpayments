@@ -18,6 +18,25 @@ De volledige specificatie (paginastructuur, event-meetplan, architectuur) staat 
   - `stripe-webhook.js` — de betrouwbare bron voor `purchase_completed` / `payment_failed`: Stripe roept dit server-naar-server aan, ook als de klant het tabblad sluit.
   - `ghl-webhook.js` — ontvangt statusupdates vanuit GoHighLevel-workflows (`contacted`, `qualified`, `not_qualified`, `won`, `lost`) en stuurt ze door als `lead_contacted` / `lead_qualified` / `sale_closed` naar PostHog.
 
+## Gedragsmeting (v18.1)
+
+PostHog laadt via de officiële loader met wachtrij, dus ook events vóór het laden van de bibliotheek komen aan.
+Aan: autocapture (elke klik), heatmaps, dead clicks, sessie-opnames met gemaskeerde invoervelden, `$pageview` en `$pageleave`.
+
+Extra events (index + start):
+- `scroll_depth` (`pct`: 25/50/75/100)
+- `page_exit` bij vertrek/wegswipen: `max_scroll_pct`, `last_section`, `sec_<sectie>_s` (seconden in beeld per sectie),
+  en op index ook `quiz_open`, `quiz_step`, `field_<veld>` (leeg / aangeraakt / verlaten_leeg / ongeldig / ingevuld)
+- `field_focus` / `field_blur` per formulierveld (`name`, `email`, `phone`, `insta`)
+- `quiz_abandoned`: vragenlijst gesloten, met stap en status per veld
+
+Identiteit: na het formulier `posthog.identify(lead_id)`; start.html en bedankt.html identificeren met dezelfde lead_id,
+en de server-events (`lead_submitted`, `purchase_completed`) gebruiken ook lead_id. Eén tijdlijn per persoon.
+
+Funnel om in PostHog aan te maken (Product analytics → Funnel, conversievenster 7 dagen):
+`landing_viewed` → `cta_clicked` → `quiz_open` → `quiz_answer` (question = niche) → `quiz_answer` (question = followers)
+→ `lead_form_started` → `quiz_contact_complete` → `page_view` (page = start) → `checkout_started` → `purchase_completed`
+
 ## Analytics
 
 Elke pagina stuurt events naar drie plekken via `track(event, props)`:

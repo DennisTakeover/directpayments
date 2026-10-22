@@ -257,20 +257,13 @@ footer{border-top:1px solid var(--border);margin-top:40px;padding:26px 0 120px;t
 <script>
 const CONFIG = {
   STRIPE_PAYMENT_LINK: "https://buy.stripe.com/14A9AVd2t5yQ8OK1uPb7y08",
-  PAGE_VERSION: "v13.1-meta",
+  PAGE_VERSION: "v13.2-tracking",
   META_PIXEL_ID: "",
   POSTHOG_KEY: "PLAATS_HIER_JE_POSTHOG_PROJECT_KEY",
   POSTHOG_HOST: "https://eu.i.posthog.com"
 };
 
-(function () {
-  if (!CONFIG.POSTHOG_KEY || CONFIG.POSTHOG_KEY.indexOf("PLAATS_HIER") === 0) return;
-  var t = document.createElement("script");
-  t.src = "https://cdn.jsdelivr.net/npm/posthog-js@1.194.4/dist/array.full.js";
-  t.async = true;
-  t.onload = function () { window.posthog.init(CONFIG.POSTHOG_KEY, { api_host: CONFIG.POSTHOG_HOST }); };
-  document.head.appendChild(t);
-})();
+if(CONFIG.POSTHOG_KEY&&CONFIG.POSTHOG_KEY.indexOf("PLAATS_HIER")!==0){!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags on onFeatureFlags onSessionId identify setPersonProperties group resetGroups reset get_distinct_id get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init(CONFIG.POSTHOG_KEY,{api_host:CONFIG.POSTHOG_HOST,person_profiles:"identified_only",capture_pageview:!0,capture_pageleave:!0,autocapture:!0,enable_heatmaps:!0,capture_dead_clicks:!0,session_recording:{maskAllInputs:!0,maskTextSelector:"[data-ph-mask]"}});posthog.register({funnel_page:"betaalpagina",page_version:CONFIG.PAGE_VERSION});try{var _l=JSON.parse(localStorage.getItem("pv_lead")||"null");if(_l&&_l.lead_id)posthog.identify(_l.lead_id)}catch(e){}}
 const PV_START = Date.now();
 let PV_ACTIVE_MS = 0, PV_LAST_TICK = Date.now(), PV_VISIBLE = !document.hidden;
 setInterval(function () { if (PV_VISIBLE) PV_ACTIVE_MS += Date.now() - PV_LAST_TICK; PV_LAST_TICK = Date.now(); }, 1000);
@@ -537,6 +530,97 @@ document.addEventListener("click", function (e) {
   var sec = btn.closest("section, .hero");
   track("cta_clicked", { label: (btn.dataset.cta || btn.textContent || "").trim().slice(0, 60), section: sec ? (sec.id || sec.className.split(" ")[0]) : null });
 }, true);
+</script>
+<script>
+/* ── Gedragsmeting (PromoView) ──────────────────────────────────────────
+   scroll_depth 25/50/75/100 · tijd per sectie · laatste sectie bij vertrek
+   page_exit met samenvatting · formulier per veld (alleen index)        */
+(function () {
+  var PAGE = "betaalpagina";
+  var maxPct = 0, hit = {};
+  function onScroll() {
+    var h = document.documentElement, pct = Math.min(100, Math.round((scrollY + innerHeight) / h.scrollHeight * 100));
+    if (pct > maxPct) maxPct = pct;
+    [25, 50, 75, 100].forEach(function (m) { if (pct >= m && !hit[m]) { hit[m] = 1; track("scroll_depth", { pct: m, page: PAGE }); } });
+  }
+  addEventListener("scroll", onScroll, { passive: true });
+  setTimeout(onScroll, 800);
+
+  // Tijd per sectie: telt alleen terwijl de sectie in beeld is én de tab zichtbaar is.
+  var secs = [].slice.call(document.querySelectorAll("header.hero, header, section"));
+  function sid(el) { return el.id || (el.classList.contains("hero") || el.tagName === "HEADER" ? "hero" : el.classList.contains("final") ? "slot" : el.className.split(" ")[0] || "sectie"); }
+  var inView = {}, ms = {}, current = null, ratios = {};
+  function flush(now) {
+    Object.keys(inView).forEach(function (k) { ms[k] = (ms[k] || 0) + (now - inView[k]); inView[k] = now; });
+  }
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) {
+      var now = Date.now();
+      es.forEach(function (e) {
+        var k = sid(e.target);
+        ratios[k] = e.intersectionRatio;
+        if (e.isIntersecting && !document.hidden) { if (!inView[k]) inView[k] = now; }
+        else if (inView[k]) { ms[k] = (ms[k] || 0) + (now - inView[k]); delete inView[k]; }
+      });
+      var best = null, br = 0;
+      Object.keys(ratios).forEach(function (k) { if (ratios[k] > br) { br = ratios[k]; best = k; } });
+      if (best && best !== current) { current = best; }
+    }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+    secs.forEach(function (s) { io.observe(s); });
+  }
+
+  // Formulier per veld (zit in de vragenlijst op index.html).
+  var fieldState = {};
+  ["f-name", "f-email", "f-phone", "f-insta"].forEach(function (id) {
+    var el = document.getElementById(id); if (!el) return;
+    var f = id.replace("f-", ""); fieldState[f] = "leeg";
+    el.addEventListener("focus", function () { track("field_focus", { field: f }); if (fieldState[f] === "leeg") fieldState[f] = "aangeraakt"; });
+    el.addEventListener("blur", function () {
+      var filled = !!el.value.trim(), valid = el.checkValidity ? el.checkValidity() : filled;
+      fieldState[f] = filled ? (valid ? "ingevuld" : "ongeldig") : (fieldState[f] === "leeg" ? "leeg" : "verlaten_leeg");
+      track("field_blur", { field: f, filled: filled, valid: filled && valid, state: fieldState[f] });
+    });
+  });
+  function formSummary() {
+    var o = {}; Object.keys(fieldState).forEach(function (k) { o["field_" + k] = fieldState[k]; }); return o;
+  }
+  // Sluiten van de vragenlijst: laat zien op welke stap en met welke velden.
+  if (typeof window.closeCheckout === "function") {
+    var _close = window.closeCheckout;
+    window.closeCheckout = function () {
+      try {
+        var step = document.querySelector(".qz-step:not([hidden])");
+        track("quiz_abandoned", Object.assign({ step: step ? step.dataset.q : null }, formSummary()));
+      } catch (e) {}
+      return _close.apply(this, arguments);
+    };
+  }
+
+  // Vertrek: één samenvatting per paginabezoek (ook bij wegswipen op mobiel).
+  var sent = false;
+  function exit(reason) {
+    if (sent) return; sent = true;
+    var now = Date.now(); flush(now);
+    var props = { page: PAGE, reason: reason, max_scroll_pct: maxPct, last_section: current };
+    Object.keys(ms).forEach(function (k) { props["sec_" + k + "_s"] = Math.round(ms[k] / 100) / 10; });
+    var modal = document.getElementById("checkoutModal");
+    if (modal) {
+      props.quiz_open = modal.classList.contains("open");
+      var st = document.querySelector(".qz-step:not([hidden])");
+      props.quiz_step = props.quiz_open && st ? st.dataset.q : null;
+      Object.assign(props, formSummary());
+    }
+    var full = Object.assign({}, typeof pvBaseProps === "function" ? pvBaseProps() : {}, props);
+    try { window.dataLayer && window.dataLayer.push(Object.assign({ event: "page_exit", ts: now }, full)); } catch (e) {}
+    try { window.posthog && window.posthog.capture("page_exit", full, { transport: "sendBeacon" }); } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", function () {
+    var now = Date.now();
+    if (document.hidden) { flush(now); exit("tab_verborgen"); }
+    else { Object.keys(inView).forEach(function (k) { inView[k] = now; }); }
+  });
+  addEventListener("pagehide", function () { exit("pagina_verlaten"); });
+})();
 </script>
 </body>
 </html>
