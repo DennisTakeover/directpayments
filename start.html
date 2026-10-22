@@ -210,7 +210,7 @@ footer{border-top:1px solid var(--border);margin-top:40px;padding:26px 0 120px;t
       <span class="label">Klaar om te starten</span>
       <div class="price">€190<small>/maand excl. btw</small></div>
       <div class="per-day">Dat is <b>€6,30 per dag</b>, inclusief doelgroeponderzoek, dashboard en persoonlijk contact.<br>Alle bedragen zijn exclusief btw. Zakelijk btw-nummer buiten Nederland? Dan reken je btw-verlegd af.</div>
-      <button class="btn" id="payBtn" onclick="startGroei('main')">LATEN WE BEGINNEN <span class="arrow">→</span></button>
+      <button class="btn" id="payBtn" onclick="startGroei('main')">Start nu voor €190 per maand <span class="arrow">→</span></button>
       <div class="secure">🔒 Veilig betalen via Stripe: iDEAL, Bancontact of creditcard</div>
       <div class="risk">
         <span><span class="tick">✓</span> Binnen 48 uur actief</span>
@@ -249,8 +249,8 @@ footer{border-top:1px solid var(--border);margin-top:40px;padding:26px 0 120px;t
 
 <div class="sticky" id="stickyBar">
   <div class="inner">
-    <button class="btn" onclick="startGroei('sticky')">LATEN WE BEGINNEN →</button>
-    <span class="note">€190 p/m excl. btw ·<br>opzegbaar</span>
+    <button class="btn" onclick="startGroei('sticky')">Start nu →</button>
+    <span class="note">€190 p/m excl. btw ·<br>maandelijks opzegbaar</span>
   </div>
 </div>
 
@@ -425,7 +425,7 @@ function startGroei(source) {
 /* ── Evie: AI-assistent ── */
 const WHATSAPP = "https://wa.me/31685888134";
 const QA = [
-  { chip:"Kan ik altijd opzeggen?", keys:["opzeg","stoppen","contract","vast","pauze"], a:"Ja. Maandelijks opzegbaar, per direct. Je kunt ook pauzeren, bijvoorbeeld per seizoen. Opzeggingen bevestigen we altijd schriftelijk met einddatum en laatste factuurmoment. Geen kleine lettertjes." },
+  { chip:"Kan ik altijd opzeggen?", keys:["opzeg","stoppen","contract","vast","pauze"], a:"Ja. Maandelijks opzegbaar. Je kunt ook pauzeren, bijvoorbeeld per seizoen. Opzeggingen bevestigen we altijd schriftelijk met einddatum en laatste factuurmoment. Geen kleine lettertjes." },
   { chip:"Is dit veilig voor mijn account?", keys:["veilig","hack","2fa","blokk","risico","account"], a:"Ja. Bij de onboarding stellen we 2FA in en leggen we vooraf uit welke meldingen je van Instagram kunt zien en waarom. Geen verrassingen. Veiligheid is stap 1." },
   { chip:"Zijn dit echte volgers?", keys:["fake","bot","echte","nep","gekocht"], a:"Echte volgers. Groei komt doordat relevante mensen jouw profiel organisch ontdekken. We kopen nooit accounts. Klanten benoemen dat letterlijk in hun reviews." },
   { chip:"Hoe snel zie ik resultaat?", keys:["snel","wanneer","resultaat","duurt","48"], a:"Binnen 48 uur na je onboarding is het systeem actief, en de eerste profielbezoeken en volgers komen doorgaans in de eerste dagen. Hoeveel verschilt per account en niche, daarom sturen we doorlopend bij." },
