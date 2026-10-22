@@ -1,5 +1,6 @@
 const Stripe = require("stripe");
 const { PostHog } = require("posthog-node");
+const { sendMetaEvent, clientIp } = require("./_lib/meta");
 
 let stripe = null;
 function getStripe() {
@@ -54,6 +55,30 @@ module.exports = async (req, res) => {
         });
         await ph.shutdown();
       }
+      // Meta Conversions API vanuit de browser-sessie van de koper: met IP,
+      // user agent en fbp/fbc voor een betere match. Zelfde event_id als de
+      // pixel op bedankt.html en /api/stripe-webhook -> telt als één aankoop.
+      const cd = session.customer_details || {};
+      await sendMetaEvent({
+        eventName: "Purchase",
+        eventId: `purchase_${session.id}`,
+        eventSourceUrl: req.headers.referer || undefined,
+        user: {
+          email: cd.email || session.customer_email,
+          phone: cd.phone,
+          name: cd.name,
+          externalId: leadId,
+          ip: clientIp(req),
+          ua: req.headers["user-agent"],
+          fbp: req.query.fbp,
+          fbc: req.query.fbc,
+        },
+        customData: {
+          value: session.amount_total ? session.amount_total / 100 : null,
+          currency: session.currency ? String(session.currency).toUpperCase() : "EUR",
+          content_name: "PromoView Groeisysteem",
+        },
+      });
     }
 
     return res.status(200).json({

@@ -1,6 +1,6 @@
 # directpayments
 
-Landingspagina PromoView v17.0 (directe checkout) + gemeten verkoopfunnel.
+Landingspagina PromoView v18 (één flow: landingspagina > gegevens > start.html > Stripe) + gemeten verkoopfunnel met GoHighLevel en Meta Conversions API.
 
 De volledige specificatie (paginastructuur, event-meetplan, architectuur) staat in het gedeelde document
 "PromoView Verkoopfunnel — Specificatie".

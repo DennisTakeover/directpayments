@@ -257,7 +257,8 @@ footer{border-top:1px solid var(--border);margin-top:40px;padding:26px 0 120px;t
 <script>
 const CONFIG = {
   STRIPE_PAYMENT_LINK: "https://buy.stripe.com/14A9AVd2t5yQ8OK1uPb7y08",
-  PAGE_VERSION: "v13.0-light",
+  PAGE_VERSION: "v13.1-meta",
+  META_PIXEL_ID: "",
   POSTHOG_KEY: "PLAATS_HIER_JE_POSTHOG_PROJECT_KEY",
   POSTHOG_HOST: "https://eu.i.posthog.com"
 };
@@ -310,6 +311,26 @@ const REVIEWS = [
 
 const TP_STAR = '<i><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8z"/></svg></i>';
 
+
+/* ── Meta Pixel ── (zelfde ID als index.html; leeg = uit) */
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+function pvFbIds(){var c=function(n){var m=document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"));return m?decodeURIComponent(m[1]):null};var o={fbp:c("_fbp"),fbc:c("_fbc")};if(!o.fbc){try{var s=JSON.parse(localStorage.getItem("pv_fbclid")||"null");if(s&&s.id)o.fbc="fb.1."+s.ts+"."+s.id}catch(e){}}return o}(function(){try{var id=new URLSearchParams(location.search).get("fbclid");if(id)localStorage.setItem("pv_fbclid",JSON.stringify({id:id,ts:Date.now()}))}catch(e){}})();
+var PV_LEAD = null; try { PV_LEAD = JSON.parse(localStorage.getItem("pv_lead")); } catch (_) {}
+if (CONFIG.META_PIXEL_ID) {
+  // Advanced matching: de pixel hasht deze gegevens zelf voordat ze naar Meta gaan.
+  var am = {};
+  if (PV_LEAD) {
+    if (PV_LEAD.email) am.em = String(PV_LEAD.email).trim().toLowerCase();
+    if (PV_LEAD.phone) am.ph = String(PV_LEAD.phone).replace(/\D/g, "").replace(/^06/, "316").replace(/^04/, "324");
+    if (PV_LEAD.name) am.fn = String(PV_LEAD.name).trim().split(/\s+/)[0].toLowerCase();
+    if (PV_LEAD.lead_id) am.external_id = PV_LEAD.lead_id;
+  }
+  fbq("init", CONFIG.META_PIXEL_ID, am);
+  fbq("track", "PageView");
+} else {
+  window.fbq = function () {};
+}
+
 window.dataLayer = window.dataLayer || [];
 function track(event, params = {}) {
   const props = Object.assign({}, pvBaseProps(), params);
@@ -323,6 +344,7 @@ let lead = null;
 try { lead = JSON.parse(localStorage.getItem("pv_lead")); } catch (_) {}
 const niche = (lead && NICHES[lead.niche]) ? lead.niche : "Anders";
 const N = NICHES[niche];
+try { fbq("track", "ViewContent", { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem" }, { eventID: "vc_" + (lead ? lead.lead_id : Date.now().toString(36)) }); } catch (_) {}
 track("page_view", { page: "start", version: "v13.0-light", lead_id: lead ? lead.lead_id : null, niche: niche });
 
 if (lead && lead.name) {
@@ -418,6 +440,10 @@ function startGroei(source) {
     url.searchParams.set("prefilled_email", lead.email);
     url.searchParams.set("client_reference_id", lead.lead_id);
   }
+  try {
+    fbq("track", "InitiateCheckout", { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem" },
+        { eventID: "ic_" + (lead ? lead.lead_id : Date.now().toString(36)) });
+  } catch (_) {}
   track("payment_redirect", { lead_id: lead ? lead.lead_id : null });
   location.href = url.toString();
 }

@@ -70,6 +70,7 @@ p{color:var(--text-dim);margin-bottom:10px}
 const CONFIG = {
   ONBOARDING_URL: "",
   WHATSAPP: "https://wa.me/31685888134",
+  META_PIXEL_ID: "",
   POSTHOG_KEY: "PLAATS_HIER_JE_POSTHOG_PROJECT_KEY",
   POSTHOG_HOST: "https://eu.i.posthog.com"
 };
@@ -82,6 +83,26 @@ const CONFIG = {
   t.onload = function () { window.posthog.init(CONFIG.POSTHOG_KEY, { api_host: CONFIG.POSTHOG_HOST }); };
   document.head.appendChild(t);
 })();
+
+
+/* ── Meta Pixel ── (zelfde ID als index.html; leeg = uit) */
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+function pvFbIds(){var c=function(n){var m=document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"));return m?decodeURIComponent(m[1]):null};var o={fbp:c("_fbp"),fbc:c("_fbc")};if(!o.fbc){try{var s=JSON.parse(localStorage.getItem("pv_fbclid")||"null");if(s&&s.id)o.fbc="fb.1."+s.ts+"."+s.id}catch(e){}}return o}(function(){try{var id=new URLSearchParams(location.search).get("fbclid");if(id)localStorage.setItem("pv_fbclid",JSON.stringify({id:id,ts:Date.now()}))}catch(e){}})();
+var PV_LEAD = null; try { PV_LEAD = JSON.parse(localStorage.getItem("pv_lead")); } catch (_) {}
+if (CONFIG.META_PIXEL_ID) {
+  // Advanced matching: de pixel hasht deze gegevens zelf voordat ze naar Meta gaan.
+  var am = {};
+  if (PV_LEAD) {
+    if (PV_LEAD.email) am.em = String(PV_LEAD.email).trim().toLowerCase();
+    if (PV_LEAD.phone) am.ph = String(PV_LEAD.phone).replace(/\D/g, "").replace(/^06/, "316").replace(/^04/, "324");
+    if (PV_LEAD.name) am.fn = String(PV_LEAD.name).trim().split(/\s+/)[0].toLowerCase();
+    if (PV_LEAD.lead_id) am.external_id = PV_LEAD.lead_id;
+  }
+  fbq("init", CONFIG.META_PIXEL_ID, am);
+  fbq("track", "PageView");
+} else {
+  window.fbq = function () {};
+}
 
 window.dataLayer = window.dataLayer || [];
 function track(event, params) {
@@ -98,11 +119,14 @@ track("bedankt_page_viewed");
 (function () {
   var sessionId = new URLSearchParams(location.search).get("session_id");
   if (!sessionId) { track("purchase_unconfirmed", { reason: "missing_session_id" }); return; }
-  fetch("/api/verify-payment?session_id=" + encodeURIComponent(sessionId))
+  var fb = pvFbIds();
+  fetch("/api/verify-payment?session_id=" + encodeURIComponent(sessionId) + (fb.fbp ? "&fbp=" + encodeURIComponent(fb.fbp) : "") + (fb.fbc ? "&fbc=" + encodeURIComponent(fb.fbc) : ""))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d && d.ok && d.paid) {
         track("purchase_completed", { amount_total: d.amount_total, currency: d.currency, lead_id: d.lead_id });
+        // Zelfde eventID als de server (purchase_<session_id>): Meta telt dit als één aankoop.
+        try { fbq("track", "Purchase", { value: d.amount_total || 190, currency: String(d.currency || "eur").toUpperCase(), content_name: "PromoView Groeisysteem" }, { eventID: "purchase_" + sessionId }); } catch (_) {}
       } else {
         track("purchase_unconfirmed", { reason: "not_paid" });
       }

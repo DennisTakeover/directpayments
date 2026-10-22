@@ -1,4 +1,6 @@
 const { PostHog } = require("posthog-node");
+const { sendToGhl } = require("./_lib/ghl");
+const { sendMetaEvent, clientIp, normPhone } = require("./_lib/meta");
 
 let posthog = null;
 function getPostHog() {
@@ -51,23 +53,31 @@ module.exports = async (req, res) => {
     return res.status(400).json({ ok: false, error: "missing_required_fields" });
   }
 
-  let crmOk = false;
-  let crmError = null;
-  if (process.env.GHL_WEBHOOK_URL) {
-    try {
-      const r = await fetch(process.env.GHL_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(lead),
-      });
-      crmOk = r.ok;
-      if (!r.ok) crmError = `ghl_status_${r.status}`;
-    } catch (e) {
-      crmError = "ghl_network_error";
-    }
-  } else {
-    crmError = "ghl_webhook_url_not_configured";
-  }
+  // Naar GoHighLevel: event "lead" + status "niet_betaald". De GHL-workflow
+  // start hiermee de opvolging; /api/stripe-webhook stuurt later
+  // "payment_completed" voor wie wel betaalt.
+  const [crm, meta] = await Promise.all([
+    sendToGhl("lead", Object.assign({ event: "lead", payment_status: "niet_betaald", phone_e164: normPhone(lead.phone) ? "+" + normPhone(lead.phone) : null }, lead)),
+    // Meta Conversions API: zelfde event_id als de browser-pixel (lead_<id>) voor deduplicatie.
+    sendMetaEvent({
+      eventName: "Lead",
+      eventId: `lead_${lead.lead_id}`,
+      eventSourceUrl: body.event_source_url || lead.source || undefined,
+      user: {
+        email: lead.email,
+        phone: lead.phone,
+        name: lead.name,
+        externalId: lead.lead_id,
+        ip: clientIp(req),
+        ua: req.headers["user-agent"],
+        fbp: body.fbp,
+        fbc: body.fbc,
+      },
+      customData: { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem", lead_type: lead.lead_type },
+    }),
+  ]);
+  const crmOk = crm.ok;
+  const crmError = crm.ok ? null : crm.error;
 
   const ph = getPostHog();
   if (ph) {
@@ -84,6 +94,7 @@ module.exports = async (req, res) => {
         utm_campaign: lead.utm_campaign,
         page_version: lead.page_version,
         crm_synced: crmOk,
+        meta_capi_sent: !!meta.ok,
       },
     });
     await ph.shutdown();
