@@ -1,6 +1,6 @@
 # directpayments
 
-Landingspagina PromoView v11.4 + gemeten verkoopfunnel.
+Landingspagina PromoView v17.0 (directe checkout) + gemeten verkoopfunnel.
 
 De volledige specificatie (paginastructuur, event-meetplan, architectuur) staat in het gedeelde document
 "PromoView Verkoopfunnel — Specificatie".
