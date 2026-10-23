@@ -34,7 +34,7 @@ function clean(obj) {
   return obj;
 }
 
-async function sendMetaEvent({ eventName, eventId, eventSourceUrl, user = {}, customData = {} }) {
+async function sendMetaEvent({ eventName, eventId, eventSourceUrl, user = {}, customData = {}, testEventCode }) {
   const pixel = process.env.META_PIXEL_ID;
   const token = process.env.META_CAPI_TOKEN;
   if (!pixel || !token) return { ok: false, skipped: "meta_not_configured" };
@@ -63,7 +63,8 @@ async function sendMetaEvent({ eventName, eventId, eventSourceUrl, user = {}, cu
   });
 
   const body = { data: [event] };
-  if (process.env.META_TEST_EVENT_CODE) body.test_event_code = process.env.META_TEST_EVENT_CODE;
+  const tec = testEventCode || process.env.META_TEST_EVENT_CODE;
+  if (tec) body.test_event_code = tec;
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 4000);
