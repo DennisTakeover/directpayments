@@ -5,6 +5,7 @@
   "description": "PromoView landingspagina + funnel-API (Vercel Functions)",
   "dependencies": {
     "stripe": "^17.4.0",
-    "posthog-node": "^4.3.1"
+    "posthog-node": "^4.3.1",
+    "@vercel/edge": "^1.2.1"
   }
 }
