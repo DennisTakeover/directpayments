@@ -341,7 +341,10 @@ if (!lead) {
   try {
     var qp = new URLSearchParams(location.search);
     var slugMap = { beauty: "Beauty / salon", bouw: "Bouw / vakmanschap", coach: "Coach / personal brand", horeca: "Horeca / events", webshop: "Webshop / merk", sport: "Sport / fitness" };
-    var qNiche = slugMap[(qp.get("niche") || "").toLowerCase()];
+    var qNicheRaw = qp.get("niche") || "";
+    // Accepteert zowel de volledige naam (zoals opgeslagen in GHL, bv. "Beauty / salon")
+    // als de korte slug (zoals gebruikt in advertentielinks, bv. "beauty").
+    var qNiche = NICHES[qNicheRaw] ? qNicheRaw : slugMap[qNicheRaw.toLowerCase()];
     var qName = qp.get("name");
     if (qNiche || qName) {
       lead = { name: qName || null, niche: qNiche || null, lead_id: qp.get("lead_id") || null, email: qp.get("email") || null };
