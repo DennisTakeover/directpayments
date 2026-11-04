@@ -335,6 +335,19 @@ function track(event, params = {}) {
 
 let lead = null;
 try { lead = JSON.parse(localStorage.getItem("pv_lead")); } catch (_) {}
+// Val terug op URL-parameters als er geen localStorage-lead is (bv. iemand opent
+// deze link vanuit een e-mail, op een ander apparaat of in een andere browser).
+if (!lead) {
+  try {
+    var qp = new URLSearchParams(location.search);
+    var slugMap = { beauty: "Beauty / salon", bouw: "Bouw / vakmanschap", coach: "Coach / personal brand", horeca: "Horeca / events", webshop: "Webshop / merk", sport: "Sport / fitness" };
+    var qNiche = slugMap[(qp.get("niche") || "").toLowerCase()];
+    var qName = qp.get("name");
+    if (qNiche || qName) {
+      lead = { name: qName || null, niche: qNiche || null, lead_id: qp.get("lead_id") || null, email: qp.get("email") || null };
+    }
+  } catch (_) {}
+}
 const niche = (lead && NICHES[lead.niche]) ? lead.niche : "Anders";
 const N = NICHES[niche];
 try { fbq("track", "ViewContent", { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem" }, { eventID: "vc_" + (lead ? lead.lead_id : Date.now().toString(36)) }); } catch (_) {}
