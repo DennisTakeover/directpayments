@@ -1,9 +1,9 @@
 // A/B-test landingspagina: V3 (v3.html, prijs na gegevens) vs V4 (v4.html, prijs direct + "bel me terug"), 50/50.
 // - Nieuwe bezoeker krijgt willekeurig v3 of v4; cookie pv_lp3 onthoudt dat 30 dagen.
 //   (Nieuwe cookienaam: bezoekers uit eerdere tests worden opnieuw verdeeld.)
-// - Handmatig bekijken: ?lp=v1, ?lp=v2, ?lp=v3 of ?lp=v4
+// - Handmatig bekijken: ?lp=v1, ?lp=v2, ?lp=v3, ?lp=v4 of ?lp=v5 (V5 = gratis doelgroepscan, alleen preview)
 // - De URL in de browser blijft "/"; de variant wordt server-side ge-rewrite.
-// - V1 -> start.html, V2 -> start2.html, V3 -> start3.html, V4 -> start4.html.
+// - V1 -> start.html, V2 -> start2.html, V3 -> start3.html, V4 -> start4.html, V5 -> start5.html.
 // - Uitzetten: zet AB_SPLIT_B op 0 (iedereen V3) of 1 (iedereen V4).
 import { next, rewrite } from "@vercel/edge";
 
@@ -11,7 +11,7 @@ export const config = { matcher: ["/", "/index.html"] };
 
 const A = "v3", B = "v4";
 const AB_SPLIT_B = 0.5; // aandeel bezoekers dat variant B ziet
-const PAGES = { v2: "/v2.html", v3: "/v3.html", v4: "/v4.html" };
+const PAGES = { v2: "/v2.html", v3: "/v3.html", v4: "/v4.html", v5: "/v5.html" };
 
 export default function middleware(request) {
   const url = new URL(request.url);

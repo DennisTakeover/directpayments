@@ -23,6 +23,10 @@
     {
       "source": "/v4",
       "destination": "/v4.html"
+    },
+    {
+      "source": "/v5",
+      "destination": "/v5.html"
     }
   ]
 }

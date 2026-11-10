@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jouw maandprijs | PromoView</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --obsidian:#FAF8FB;--carbon:#FFFFFF;--promo-pink:#E84163;--hot-pink:#FF3B70;
+  --magenta:#C22BAF;--violet:#7A22C7;--off-white:#14121A;--text-dim:#585161;
+  --border:#E5E0EA;--border-pink:rgba(232,65,99,.32);--green:#15A34A;--tp:#00B67A;
+  --radius:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,::after,::before{animation:none!important;transition:none!important}}
+body{background:var(--obsidian);color:var(--off-white);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background-image:radial-gradient(ellipse 65% 40% at 50% -8%,rgba(194,43,175,.08),transparent 62%)}
+img,svg{display:block;max-width:100%}
+a{color:var(--promo-pink)}
+button{font-family:inherit}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+h1{font-size:clamp(28px,6.2vw,42px);line-height:1.13;letter-spacing:-.02em;font-weight:800;margin-bottom:14px}
+h2{font-size:clamp(23px,4vw,31px);line-height:1.15;letter-spacing:-.02em;font-weight:800;margin-bottom:12px}
+h3{font-size:18px;font-weight:700}
+.topbar{padding:24px 0 6px;text-align:center;font-weight:800;letter-spacing:.28em;font-size:14px}
+.topbar b{border-bottom:3px solid var(--promo-pink);padding-bottom:4px}
+.label{color:var(--promo-pink);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;display:block}
+.sub{color:var(--text-dim);font-size:17px}
+section{padding:38px 0}
+.hero{text-align:center;padding:30px 0 8px}
+.badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border-pink);background:rgba(232,65,99,.07);font-size:13px;font-weight:700;padding:8px 16px;border-radius:99px;margin-bottom:20px;letter-spacing:.04em}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.hook{border-left:3px solid var(--promo-pink);background:rgba(232,65,99,.06);border-radius:0 12px 12px 0;
+  padding:16px 20px;margin:22px auto 0;text-align:left;font-size:17px;font-weight:600;max-width:640px}
+.card{background:var(--carbon);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--promo-pink);color:#fff;border:none;cursor:pointer;font-size:18px;font-weight:800;padding:18px 34px;border-radius:12px;text-decoration:none;width:100%;letter-spacing:.01em;transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(232,65,99,.42)}
+.btn:focus-visible{outline:3px solid var(--hot-pink);outline-offset:3px}
+.btn .arrow{transition:transform .12s}
+.btn:hover .arrow{transform:translateX(3px)}
+.risk{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;margin-top:14px;color:var(--text-dim);font-size:13px}
+.risk span{display:inline-flex;align-items:center;gap:6px}
+.risk .tick{color:var(--promo-pink);font-weight:700}
+.secure{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;color:var(--text-dim);font-size:13px}
+.tl{margin-top:24px}
+.tl .row{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);font-size:15px}
+.tl .row:last-child{border-bottom:none}
+.tl .when{flex-shrink:0;width:126px;font-weight:800;color:var(--promo-pink);font-size:13px;padding-top:2px}
+.tl .row span:last-child{color:var(--text-dim)}
+.tl .row b{color:var(--off-white)}
+.cases{display:grid;gap:16px;margin-top:24px}
+@media(min-width:760px){.cases{grid-template-columns:repeat(3,1fr)}}
+.video-card{padding:0;overflow:hidden}
+.video-frame{position:relative;aspect-ratio:16/9;background:#000;cursor:pointer}
+.video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video-poster{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(122,34,199,.25),rgba(232,65,99,.2)),var(--obsidian);
+  background-size:cover;background-position:center}
+.video-poster::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,12,15,.12),rgba(13,12,15,.5));opacity:0;transition:opacity .25s}
+.video-poster.has-thumb::after{opacity:1}
+.play-btn{position:relative;z-index:1;width:56px;height:56px;border-radius:50%;background:var(--promo-pink);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(232,65,99,.5)}
+.play-btn svg{width:19px;height:19px;fill:#fff;margin-left:3px}
+.video-meta{padding:16px 18px}
+.video-meta .who{font-weight:700;font-size:15px}
+.video-meta .q{color:var(--text-dim);font-size:14px;margin-top:5px;font-style:italic}
+.video-meta .n{margin-top:10px;font-size:19px;font-weight:800;color:var(--promo-pink)}
+.video-meta .n small{display:block;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.revs{display:grid;gap:14px;margin-top:24px}
+@media(min-width:760px){.revs{grid-template-columns:repeat(3,1fr)}}
+.revs .card{padding:20px}
+.revs .nm{font-weight:700;font-size:15px;margin-bottom:6px}
+.revs p{font-size:14.5px;line-height:1.55;margin:10px 0}
+.revs .src{font-size:12px;color:var(--text-dim)}
+.tp-stars{display:inline-flex;gap:2px}
+.tp-stars i{width:16px;height:16px;background:var(--tp);display:inline-flex;align-items:center;justify-content:center;font-style:normal}
+.tp-stars i svg{width:10px;height:10px;fill:#fff}
+.honest{border:1px solid var(--border);border-radius:var(--radius);background:var(--carbon);padding:24px;margin-top:24px}
+.honest ul{list-style:none}
+.honest li{display:flex;gap:12px;padding:9px 0;font-size:15px;color:var(--text-dim)}
+.honest .no{color:var(--promo-pink);font-weight:800;flex-shrink:0}
+.honest .yes{color:var(--tp);font-weight:800;flex-shrink:0}
+.honest b{color:var(--off-white)}
+.close-box{border:1px solid var(--promo-pink);box-shadow:0 0 0 1px var(--promo-pink),0 18px 60px rgba(232,65,99,.10);
+  border-radius:18px;background:var(--carbon);padding:30px 26px;text-align:center}
+.price{font-size:clamp(40px,8vw,52px);font-weight:800;letter-spacing:-.02em;line-height:1}
+.price small{font-size:18px;color:var(--text-dim);font-weight:600}
+.per-day{color:var(--text-dim);margin:8px 0 2px;font-size:15px}
+.per-day b{color:var(--off-white)}
+.guarantee{border:1px solid var(--tp);border-radius:12px;padding:15px 17px;margin-top:20px;background:rgba(0,182,122,.06);display:flex;gap:13px;align-items:flex-start;text-align:left}
+.guarantee .shield{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--tp);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px}
+.guarantee b{display:block;font-size:14px}
+.guarantee span{font-size:13px;color:var(--text-dim)}
+.tp-line{text-align:center;font-size:13px;color:var(--text-dim);margin-top:22px}
+.tp-line b{color:var(--off-white)}
+.tp-line .tpstar{color:var(--tp)}
+.disc{font-size:12.5px;color:var(--text-dim);margin-top:16px}
+footer{border-top:1px solid var(--border);margin-top:40px;padding:26px 0 120px;text-align:center;color:var(--text-dim);font-size:12px}
+@media(min-width:900px){footer{padding-bottom:40px}}
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-top:1px solid var(--border);padding:12px 16px;transform:translateY(110%);transition:transform .25s ease}
+.sticky.show{transform:translateY(0)}
+.sticky .inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.sticky .btn{padding:15px 20px;font-size:16px}
+.sticky .note{font-size:12px;color:var(--text-dim);line-height:1.3;flex-shrink:0}
+@media(min-width:900px){.sticky{display:none}}
+.chat-fab{position:fixed;right:16px;bottom:88px;z-index:60;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--promo-pink),var(--magenta));border:none;cursor:pointer;box-shadow:0 8px 28px rgba(232,65,99,.45);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px}
+.chat-fab .odot{position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:var(--green);border:2px solid var(--obsidian)}
+@media(min-width:900px){.chat-fab{bottom:22px}}
+.chat-panel{position:fixed;right:16px;bottom:154px;z-index:61;width:min(370px,calc(100vw - 32px));max-height:min(560px,calc(100vh - 180px));background:var(--carbon);border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 60px rgba(26,22,32,.16);display:none;flex-direction:column;overflow:hidden}
+@media(min-width:900px){.chat-panel{bottom:92px}}
+.chat-panel.open{display:flex}
+.chat-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:rgba(232,65,99,.05)}
+.chat-head .avi{position:relative;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--promo-pink),var(--violet));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex-shrink:0}
+.chat-head .avi .odot{position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid var(--carbon)}
+.chat-head .who{flex:1;min-width:0}
+.chat-head .nm{font-weight:700;font-size:15px}
+.chat-head .st{font-size:12px;color:var(--text-dim)}
+.chat-head .st .gr{color:var(--green);font-weight:600}
+.chat-head .x{background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;line-height:1;padding:4px}
+.chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5}
+.msg.evie{background:var(--obsidian);border:1px solid var(--border);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.user{background:var(--promo-pink);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.msg a{color:var(--promo-pink);font-weight:600}
+.typing{align-self:flex-start;display:flex;gap:4px;padding:12px 14px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--text-dim);animation:tp 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes tp{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+.chip-row{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 10px}
+.qchip{background:var(--obsidian);border:1px dashed var(--border-pink);color:var(--off-white);padding:7px 12px;border-radius:99px;font-size:12.5px;font-weight:600;cursor:pointer}
+.qchip:hover{background:rgba(232,65,99,.1)}
+.chat-input{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border)}
+.chat-input input{flex:1;background:var(--obsidian);border:1px solid var(--border);border-radius:99px;padding:11px 16px;color:var(--off-white);font-size:14px;font-family:inherit}
+.chat-input input:focus{outline:none;border-color:var(--promo-pink)}
+.chat-input button{width:42px;height:42px;border-radius:50%;background:var(--promo-pink);border:none;color:#fff;font-size:17px;cursor:pointer;flex-shrink:0}
+.chat-note{padding:0 16px 12px;font-size:11px;color:var(--text-dim);text-align:center}
+
+.card{box-shadow:0 1px 3px rgba(26,22,32,.05)}.sticky-cta,.sticky{box-shadow:0 -6px 24px rgba(26,22,32,.10)}.modal{box-shadow:0 24px 70px rgba(26,22,32,.22)}.chat-panel{box-shadow:0 18px 50px rgba(26,22,32,.18)}.video-frame{background:#111}
+.btn{background:#DE2F55}.btn:hover{box-shadow:0 8px 28px rgba(222,47,85,.28)}.pkg-badge,.plan-badge,.tag{background:#DE2F55}.tp-line .tpstar,.wall-cta .tpstar{color:#008F5F}.pv2-revs{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;text-align:left}.pv2 .am-rv{width:auto;margin:0;padding:16px 18px;border-radius:16px;background:#fff;border:1px solid #E5E0EA}.pv2 .am-rv blockquote{font-size:14px;line-height:1.5;color:#14121A}.pv2 .am-stars{color:#00B67A;letter-spacing:2px}@media(max-width:820px){.pv2-revs{grid-template-columns:1fr}}.pv-rvh{display:flex!important;align-items:center;gap:12px;margin:0 0 10px}.pv-rvh b{display:block;font-size:15px}.pv-rvimg{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;border:1px solid var(--am-line,#E5E0EA);display:grid;place-items:center;font-weight:800}.pv-rvh .am-stars{font-size:13px}.am-rv blockquote{margin:0!important}.pv2-guar2{margin-top:8px;background:rgba(232,65,99,.06);border-color:rgba(232,65,99,.25)}.pv2-guar2 .pv2-shield{background:linear-gradient(135deg,#E84163,#C22BAF)}.pv-guar-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:900px;margin:0 auto;text-align:left}.pv-gcard{display:flex;gap:18px;align-items:flex-start;background:#fff;border:1.5px solid rgba(21,163,74,.3);border-radius:22px;padding:22px;box-shadow:0 18px 50px rgba(26,22,32,.07)}.pv-gbadge{flex:none;width:86px;height:86px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#22c55e,#15803d);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(21,163,74,.35),inset 0 0 0 4px rgba(255,255,255,.25)}.pv-gbadge2{background:radial-gradient(circle at 30% 25%,#E84163,#C22BAF);box-shadow:0 10px 26px rgba(232,65,99,.35),inset 0 0 0 4px rgba(255,255,255,.25)}.pv-gbadge svg{width:18px;height:18px;fill:#fff;opacity:.9}.pv-gbadge b{font-size:28px;line-height:1;font-weight:900}.pv-gbadge span{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:700}.pv-gcard h3{margin:4px 0 6px;font-size:19px}.pv-gcard p{margin:0;color:var(--am-dim);font-size:15px;line-height:1.55}.pv-risk-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:14px 0 0}.pv-risk-row span{font-size:12.5px;font-weight:700;color:#0f7a37;background:rgba(21,163,74,.09);border:1px solid rgba(21,163,74,.25);padding:6px 11px;border-radius:999px}@media(max-width:760px){.pv-guar-grid{grid-template-columns:1fr}.pv-gcard{padding:18px;gap:14px}.pv-gbadge{width:72px;height:72px}.pv-gbadge b{font-size:24px}}
+@media(max-width:900px){
+.pv2-grid{display:flex;flex-direction:column;gap:18px}.pv2-intro{display:contents}
+.pv2-intro .badge{order:1;align-self:center;width:auto;display:inline-flex;margin:0}.pv2-intro h1{order:2}.pv2-intro #hook{order:3}.pv2-co{order:4}.pv2-intro .sub{order:3}.pv2-stats{order:6}
+}
+@media(max-width:600px){
+.pv2-bar{font-size:12px;padding:8px 12px}
+.pv2-hero{padding:14px 0 36px}.pv2-intro h1{font-size:30px;margin:0!important;padding:0}.pv2-intro .sub{font-size:15px;margin:0}
+.pv2-intro #hook{margin:0;font-size:15px}
+.pv2-co{padding:16px;border-radius:20px}.pv2-co-flag{margin:-16px -16px 14px;border-radius:18px 18px 0 0;font-size:12.5px}
+.pv2-co-h{flex-wrap:wrap;gap:2px 10px}.pv2-co-h b{font-size:16px}.pv2-co-h span{font-size:12px}
+.pv2-price{font-size:42px;margin:4px 0 8px}.pv2-list li{font-size:14.5px;padding:8px 0}
+.pv2-extras{padding:10px 12px}.pv2-x{font-size:14px;gap:8px}
+.pv2-btn{font-size:16.5px;padding:18px 12px;min-height:58px;white-space:nowrap}
+.pv2-stats{gap:6px;margin:0}.pv2-stats div{padding:9px 6px;text-align:center}.pv2-stats b{font-size:18px}
+.pv2-sec{padding:48px 0}.pv2-h2{font-size:28px}
+.pv2-final .pv-deal-box{padding:22px 14px 16px}.pv2-final .pv-cd div{min-width:0;flex:1;max-width:72px}
+}
+@media(max-width:900px){.pv2 .pv2-hero .badge{align-self:center!important;width:fit-content!important;max-width:100%}.pv2 .pv2-grid{gap:14px}}</style>
+<style>
+body.pv2{background:radial-gradient(900px 520px at 85% -140px,rgba(194,43,175,.10),transparent 70%),radial-gradient(900px 520px at 10% -80px,rgba(232,65,99,.10),transparent 70%),#FAF8FB}
+:root{--am-dim:#585161;--am-line:#E5E0EA}
+.pv2 .acc{color:#E84163}.pv2-wrap{max-width:1120px;margin:0 auto;padding:0 20px}.pv2-narrow{max-width:760px}
+.pv2-bar{position:sticky;top:0;z-index:70;padding:9px 16px;text-align:center;font-size:13px;color:#fff;background:linear-gradient(90deg,#E84163,#C22BAF)}
+.pv2-bar b{font-variant-numeric:tabular-nums}
+.pv2-hero{padding:26px 0 50px}.pv2-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:start}
+@media(min-width:901px){.pv2-intro{text-align:left}.pv2-intro .badge{margin-left:0}}.pv2-intro h1{font-size:clamp(32px,4.6vw,52px);line-height:1.05;letter-spacing:-.03em;margin:14px 0 12px}
+.pv2-stats{display:flex;gap:10px;margin-top:20px}.pv2-stats div{flex:1;background:#fff;border:1px solid var(--am-line);border-radius:14px;padding:12px 14px}
+.pv2-stats b{display:block;font-size:22px;font-weight:800}.pv2-stats i{color:#00B67A;font-style:normal}.pv2-stats span{font-size:12px;color:var(--am-dim)}
+.pv2-co{text-align:left;background:#fff;border:1.5px solid rgba(232,65,99,.32);border-radius:24px;padding:22px;box-shadow:0 30px 80px rgba(26,22,32,.12);position:sticky;top:56px}
+.pv2-co-flag{margin:-22px -22px 16px;padding:10px 16px;border-radius:22px 22px 0 0;background:linear-gradient(90deg,#E84163,#C22BAF);color:#fff;font-weight:700;font-size:13.5px;text-align:center}
+.pv2-co-flag b{font-variant-numeric:tabular-nums}
+.pv2-co-h{display:flex;justify-content:space-between;align-items:baseline}.pv2-co-h b{font-size:17px}.pv2-co-h span{font-size:12.5px;color:#15A34A;font-weight:700}
+.pv2-price{font-size:48px;font-weight:800;letter-spacing:-.03em;margin:6px 0 10px}.pv2-price small{font-size:15px;font-weight:500;color:var(--am-dim);letter-spacing:0}
+.pv2-list{list-style:none;margin:0 0 14px;padding:0}.pv2-list li{display:flex;gap:10px;align-items:center;padding:7px 0;font-size:15px;border-bottom:1px solid var(--am-line)}
+.pv2-list svg{width:18px;height:18px;fill:#15A34A;flex:none}
+.pv2-extras{border:2px dashed rgba(232,65,99,.5);background:#fff5f8;border-radius:16px;padding:12px 14px;margin-bottom:16px}
+.pv2-extras-t{font-weight:800;color:#DE2F55;margin-bottom:4px}
+.pv2-x{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14.5px;font-weight:600}.pv2-x span:first-child{flex:1}
+.pv2-x em{font-style:normal;font-size:11.5px;font-weight:900;color:#fff;background:#15A34A;padding:4px 9px;border-radius:7px;letter-spacing:.06em}
+.pv2-x .pv-xval{margin:0;font-size:13px}
+.pv2-btn{display:flex;width:100%;align-items:center;justify-content:center;gap:10px;padding:19px 20px;border:0;border-radius:14px;background:#DE2F55;color:#fff;font:inherit;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 10px 30px rgba(222,47,85,.3);animation:pvglow 2.4s ease-in-out infinite}
+.pv2-btn:hover{filter:brightness(1.05)}
+.pv2-secure{text-align:center;font-size:12.5px;color:var(--am-dim);margin:10px 0 0}
+.pv2-guar{display:flex;gap:12px;align-items:center;margin-top:14px;padding:12px 14px;border-radius:14px;background:rgba(21,163,74,.07);border:1px solid rgba(21,163,74,.25)}
+.pv2-shield{width:40px;height:40px;border-radius:12px;background:#15A34A;color:#fff;font-weight:900;display:grid;place-items:center;flex:none}
+.pv2-guar b{display:block;font-size:14.5px}.pv2-guar span{font-size:13px;color:var(--am-dim)}
+.pv2-sec{padding:64px 0;text-align:center}.pv2-h2{font-size:clamp(28px,4.4vw,44px);line-height:1.08;letter-spacing:-.03em;margin:0 0 12px}
+.pv2-lead{color:var(--am-dim);max-width:560px;margin:0 auto 24px}
+.am-eyebrow{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#DE2F55;margin-bottom:12px}
+.pv2-tl{list-style:none;padding:0;margin:30px 0 0;display:grid;grid-template-columns:repeat(5,1fr);gap:16px;position:relative}
+.pv2-tl:before{content:"";position:absolute;top:21px;left:10%;right:10%;height:2px;background:linear-gradient(90deg,#E84163,#C22BAF,#7A22C7)}
+.pv2-tl li{position:relative}.pv2-n{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#E84163,#C22BAF);color:#fff;font-weight:800;display:grid;place-items:center;margin:0 auto 12px;position:relative;box-shadow:0 0 0 6px #FAF8FB}
+.pv2-tl em{display:block;font-style:normal;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#C22BAF}
+.pv2-tl b{display:block;margin:4px 0}.pv2-tl p{margin:0;font-size:14px;color:var(--am-dim);line-height:1.5}
+.pv2 .cases,.pv2 .revs{text-align:left}.pv2 .video-meta .n{display:none}
+.pv2-honest ul{list-style:none;margin:0;padding:18px 20px;background:#fff;border:1px solid var(--am-line);border-radius:18px;text-align:left}
+.pv2-honest li{display:flex;gap:10px;padding:8px 0;font-size:15px}
+.pv2-final .pv-deal-box{text-align:center}
+@media(max-width:900px){.pv2-grid{grid-template-columns:1fr}.pv2-co{position:static}.pv2-tl{grid-template-columns:1fr;text-align:left;gap:0}
+.pv2-tl:before{top:0;bottom:0;left:20px;right:auto;width:2px;height:auto;background:linear-gradient(180deg,#E84163,#C22BAF,#7A22C7)}
+.pv2-tl li{padding:0 0 20px 60px;min-height:42px}.pv2-n{position:absolute;left:0;top:0;margin:0}}
+@media(max-width:480px){.pv2-price{font-size:42px}.pv2-co{padding:18px}.pv2-co-flag{margin:-18px -18px 14px}.pv2-sec{padding:50px 0}}
+
+.pv-deal-box{position:relative;max-width:820px;margin:0 auto;padding:34px 22px 26px;border-radius:28px;background:linear-gradient(160deg,#fff 0%,#fff5f8 55%,#f6efff 100%);border:2px solid rgba(232,65,99,.35);box-shadow:0 30px 90px rgba(232,65,99,.16)}
+.pv-deal-flag{display:inline-block;margin-bottom:14px;padding:8px 16px;border-radius:999px;background:linear-gradient(90deg,#E84163,#C22BAF);color:#fff;font-weight:800;font-size:13.5px;box-shadow:0 8px 24px rgba(232,65,99,.3);animation:pvpulse 2.2s ease-in-out infinite}
+@keyframes pvpulse{50%{transform:scale(1.04)}}
+.pv-deal-h{font-size:clamp(30px,5vw,50px)}
+.pv-cd{display:flex;justify-content:center;gap:10px;margin:4px 0 26px}.pv-cd div{min-width:68px;padding:10px 8px;border-radius:14px;background:#14121A;color:#fff}
+.pv-cd b{display:block;font-size:28px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}.pv-cd span{font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.08em}
+.pv-xgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:left}
+.pv-xcard{position:relative;background:#fff;border:2px dashed rgba(232,65,99,.5);border-radius:20px;padding:22px 20px 18px}
+.pv-stamp{position:absolute;top:-12px;right:16px;background:#15A34A;color:#fff;font-weight:900;font-size:13px;letter-spacing:.08em;padding:6px 12px;border-radius:8px;transform:rotate(3deg);box-shadow:0 6px 16px rgba(21,163,74,.35)}
+.pv-xico{font-size:30px;margin-bottom:8px}.pv-xcard b{display:block;font-size:18px;line-height:1.25;margin-bottom:6px}.pv-xcard p{margin:0;color:var(--am-dim);font-size:14.5px;line-height:1.5}
+.pv-xval{display:inline-block;margin-top:10px;font-size:14px;color:var(--am-dim)}.pv-xval s{text-decoration-color:#E84163;text-decoration-thickness:2px}
+.pv-xtotal{margin:16px 0 0;font-size:18px}.pv-xtotal s{color:var(--am-dim)}.pv-xtotal b{color:#15A34A}
+.pv-offer{margin-top:22px}.pv-offer-h{font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--am-dim);margin-bottom:4px}
+.pv-btn-big{font-size:19px;padding:20px 22px;animation:pvglow 2.4s ease-in-out infinite}
+@keyframes pvglow{50%{box-shadow:0 10px 44px rgba(222,47,85,.5)}}
+.pv-cd-inline{font-variant-numeric:tabular-nums}
+@media(max-width:640px){.pv-xgrid{grid-template-columns:1fr;gap:18px}.pv-cd div{min-width:60px}.pv-cd b{font-size:24px}.pv-deal-box{padding:28px 16px 22px;border-radius:22px}}
+@media(prefers-reduced-motion:reduce){.pv-deal-flag,.pv-btn-big{animation:none}}
+</style><script>window.PV_OFFER={end:(function(){var k="pv_offer_start",n=Date.now(),t=0;try{t=+localStorage.getItem(k)||0;if(!t||t>n){t=n;localStorage.setItem(k,String(t))}}catch(e){t=n}return new Date(t+5*864e5)})(),days:5,values:[null,null],spots:20};</script></head>
+<body class="pv2"><div class="pv2-bar">🔥 Tijdelijke actie: gratis profielcheck + bio- en highlightoptimalisatie · nog <b data-cd-short>…</b></div><div class="topbar"><b>PROMO</b>VIEW</div><header class="hero pv2-hero"><div class="pv2-wrap pv2-grid"><div class="pv2-intro"><span class="badge"><span class="dot"></span> <span id="badgeTxt">Je scan is aangevraagd ✓</span></span><h1 id="kop">Je doelgroepscan komt eraan.</h1><p class="sub" id="intro">Je krijgt hem binnen 1 werkdag via WhatsApp en we bellen je kort om hem toe te lichten. Wil je niet wachten? PromoView kost <b>€190 per maand excl. btw</b>: een vast bedrag, geen setupkosten en elke maand opzegbaar.</p><div class="hook" id="hook"></div><div class="pv2-stats"><div><b>1.500+</b><span>bedrijven</span></div><div><b>3M+</b><span>volgers</span></div><div><b>4,8 <i>★</i></b><span>Trustpilot</span></div></div></div><div class="pv2-co"><div class="pv2-co-flag">🔥 Actie t/m <span data-offer-end></span> · nog <b data-cd-short>…</b></div><div class="pv2-co-h"><b>Jouw maandprijs</b><span>Maandelijks opzegbaar</span></div><div class="pv2-price">€190<small>/maand excl. btw</small></div><ul class="pv2-list"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><span>Dagelijkse groei bij jouw doelgroep</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><span>Doelgroeponderzoek op maat</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><span>Groei-dashboard</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><span>Vast contactpersoon</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><span>Live binnen 48 uur</span></li></ul><div class="pv2-extras"><div class="pv2-extras-t">🎁 Nu gratis erbij</div><div class="pv2-x"><span>Profielcheck door een marketing- &amp; contentspecialist</span><span class="pv-xval" data-val="0" hidden></span><em>GRATIS</em></div><div class="pv2-x"><span>Bio- en highlightoptimalisatie</span><span class="pv-xval" data-val="1" hidden></span><em>GRATIS</em></div></div><button class="pv2-btn" id="payBtn" onclick="startGroei('main')">Start nu &amp; claim je extra's <span class="arrow">→</span></button><div class="pv2-secure">🔒 Veilig betalen via Stripe · iDEAL, Bancontact of creditcard</div><div class="pv2-guar"><div class="pv2-shield">14</div><div><b>14 dagen geld terug</b><span>Niet tevreden? Eén bericht en je krijgt je geld terug.</span></div></div><div class="pv2-guar pv2-guar2"><div class="pv2-shield">1</div><div><b>Elke maand opnieuw kiezen</b><span>Ook na maand 1 beslis je zelf of je doorgaat. Geen jaarcontract.</span></div></div></div></div></header><section class="pv2-sec"><div class="pv2-wrap"><span class="am-eyebrow">Stap voor stap</span><h2 class="pv2-h2">Wat er gebeurt zodra je <span class="acc">begint</span></h2><ol class="pv2-tl"><li><span class="pv2-n">1</span><em>Vandaag</em><b>Je rondt de betaling af en vult het onboarding-formulier in.</b><p>Tien minuten: je niche, je regio en zes accounts die lijken op wat jij doet.</p></li><li><span class="pv2-n">2</span><em>Binnen 1 werkdag</em><b>Wij bouwen je targeting.</b><p>Je vaste contactpersoon controleert de doelgroep en koppelt je account veilig, inclusief 2FA.</p></li><li><span class="pv2-n">3</span><em>Binnen 48 uur</em><b>Het systeem gaat live.</b><p>Vanaf dan word je elke dag zichtbaar bij mensen die al soortgelijke bedrijven volgen.</p></li><li><span class="pv2-n">4</span><em>Eerste week</em><b>Je profielcheck en nieuwe bio.</b><p>Onze specialist levert je verbeterpunten en we zetten je bio en highlights strak.</p></li><li><span class="pv2-n">5</span><em>Doorlopend</em><b>We sturen bij op kwaliteit.</b><p>Volgers die niet passen? Eén bericht en we passen de targeting aan. Stoppen kan elke maand.</p></li></ol></div></section><section class="pv2-sec"><div class="pv2-wrap"><span class="am-eyebrow">Bedrijven die je voorgingen</span><h2 class="pv2-h2" id="caseKop">Zo ging het bij anderen</h2><p class="pv2-lead">Echte klanten, in hun eigen woorden.</p><div class="cases" id="caseGrid"></div><p class="disc">Resultaten verschillen per account, niche en profiel. Geen gemiddelden en geen belofte.</p></div></section><section class="pv2-sec"><div class="pv2-wrap"><span class="am-eyebrow">Trustpilot-reviews</span><h2 class="pv2-h2">Sceptisch? <span class="acc">Dat waren zij ook.</span></h2><div class="revs" id="revGrid"></div><div class="tp-line"><span class="tpstar">★</span> <b>~4,8 op Trustpilot</b> · 114 reviews · 1.500+ bedrijven</div></div></section><section class="pv2-sec"><div class="pv2-wrap pv2-narrow"><span class="am-eyebrow">Eerlijk verhaal</span><h2 class="pv2-h2">Wat we wél en <span class="acc">niet</span> beloven</h2><div class="pv2-honest"><ul><li><span class="yes">✓</span><span><b>Wel:</b> elke dag zichtbaar bij mensen die al interesse hebben in jouw niche.</span></li><li><span class="yes">✓</span><span><b>Wel:</b> echte, organisch gegroeide volgers. Geen gekochte accounts.</span></li><li><span class="yes">✓</span><span><b>Wel:</b> een vast contactpersoon en targeting die we bijsturen zolang je klant bent.</span></li><li><span class="no">✗</span><span><b>Niet:</b> een gegarandeerd aantal volgers of omzet. Dat hangt af van je niche, profiel en content.</span></li><li><span class="no">✗</span><span><b>Niet:</b> viraal gaan. Dit is opbouw over maanden, geen piek in één week.</span></li></ul></div></div></section><section class="pv2-sec pv2-final"><div class="pv2-wrap pv2-narrow"><div class="pv-deal-box"><div class="pv-deal-flag">🔥 Alleen t/m <span data-offer-end></span></div><h2 class="pv2-h2">Claim je <span class="acc">gratis extra's</span></h2><p class="pv2-lead">Profielcheck door een specialist + bio- en highlightoptimalisatie, bovenop je groeisysteem. Alleen voor de 20 nieuwe klanten van deze maand.</p><div class="pv-cd" aria-label="Tijd tot einde actie"><div><b data-cd="d">0</b><span>dagen</span></div><div><b data-cd="h">00</b><span>uur</span></div><div><b data-cd="m">00</b><span>min</span></div><div><b data-cd="s">00</b><span>sec</span></div></div><button class="pv2-btn" onclick="startGroei('final')">Start nu voor €190 per maand <span class="arrow">→</span></button><div class="pv-risk-row"><span>✓ 14 dagen geld terug</span><span>✓ Elke maand opzegbaar, ook na maand 1</span><span>✓ Geen setupkosten</span></div></div></div></section><footer>PROMOVIEW · promo-view.io · De Nieuwe Erven 3, 5431NV Cuijk · KVK 81663285</footer><button class="chat-fab" id="chatFab" onclick="toggleChat()" aria-label="Chat met Evie, AI-assistent van PromoView">💬<span class="odot"></span></button>
+
+<div class="chat-panel" id="chatPanel" role="dialog" aria-label="Chat met Evie">
+  <div class="chat-head">
+    <div class="avi">E<span class="odot"></span></div>
+    <div class="who">
+      <div class="nm">Evie van PromoView</div>
+      <div class="st"><span class="gr">● Online</span> · AI-assistent, antwoordt direct</div>
+    </div>
+    <button class="x" onclick="toggleChat()" aria-label="Sluiten">×</button>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="chip-row" id="chipRow"></div>
+  <form class="chat-input" id="chatForm">
+    <input type="text" id="chatText" placeholder="Stel je vraag aan Evie…" autocomplete="off">
+    <button type="submit" aria-label="Versturen">↑</button>
+  </form>
+  <div class="chat-note">Evie is een AI-assistent. Liever een mens? Vraag om WhatsApp-contact.</div>
+</div>
+
+<div class="sticky" id="stickyBar">
+  <div class="inner">
+    <button class="btn" onclick="startGroei('sticky')">Claim je extra's →</button>
+    <span class="note">€190 p/m excl. btw ·<br>maandelijks opzegbaar</span>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  STRIPE_PAYMENT_LINK: "https://buy.stripe.com/14A9AVd2t5yQ8OK1uPb7y08",
+  PAGE_VERSION: "v5-start5",
+  META_PIXEL_ID: "1766223344686526",
+  POSTHOG_KEY: "phc_kSvVeBDoVN4rSTWzSk48YbYS29qPRQkBrDBzZAzUDQvv",
+  POSTHOG_HOST: "https://eu.i.posthog.com"
+};
+
+if(CONFIG.POSTHOG_KEY&&CONFIG.POSTHOG_KEY.indexOf("PLAATS_HIER")!==0){!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags on onFeatureFlags onSessionId identify setPersonProperties group resetGroups reset get_distinct_id get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init(CONFIG.POSTHOG_KEY,{api_host:CONFIG.POSTHOG_HOST,person_profiles:"identified_only",capture_pageview:!0,capture_pageleave:!0,autocapture:!0,enable_heatmaps:!0,capture_dead_clicks:!0,session_recording:{maskAllInputs:!0,maskTextSelector:"[data-ph-mask]"}});posthog.register({funnel_page:"betaalpagina",page_version:CONFIG.PAGE_VERSION});try{var _l=JSON.parse(localStorage.getItem("pv_lead")||"null");if(_l&&_l.lead_id)posthog.identify(_l.lead_id)}catch(e){}}
+const PV_START = Date.now();
+let PV_ACTIVE_MS = 0, PV_LAST_TICK = Date.now(), PV_VISIBLE = !document.hidden;
+setInterval(function () { if (PV_VISIBLE) PV_ACTIVE_MS += Date.now() - PV_LAST_TICK; PV_LAST_TICK = Date.now(); }, 1000);
+document.addEventListener("visibilitychange", function () { PV_VISIBLE = !document.hidden; PV_LAST_TICK = Date.now(); });
+function pvBaseProps() {
+  var l = null; try { l = JSON.parse(localStorage.getItem("pv_lead")); } catch (_) {}
+  return { page_version: CONFIG.PAGE_VERSION, device: innerWidth < 768 ? "mobile" : "desktop", elapsed_ms: Date.now() - PV_START, active_ms: PV_ACTIVE_MS, lead_id: l ? l.lead_id : null };
+}
+
+/* Elke case is een echte klantvideo, met de branche die er daadwerkelijk bij hoort. */
+const CASES = {
+  muurbloem:  { id:"203hiq923r", who:"Café de Muurbloem",    branche:"Café",         q:"Van Instagram-volger naar gast aan de bar.", n:"+2.420" },
+  maud:       { id:"tl7c2g7l8g", who:"Maud van der Meer",    branche:"Coach",        q:"Elke nieuwe volger begon een gesprek.", n:"+4.551" },
+  hoekje:     { id:"i931wdmjlb", who:"Us Hoekje",            branche:"Kledingwinkel",q:"'s Morgens gepost, 's middags stonden ze in de winkel.", n:"+498" },
+  tuincoach:  { id:"3yybqmwrpw", who:"De Bevlogen Tuincoach",branche:"Hovenier",     q:"Mijn DM's ontploften. Ik moet nu 'nee' zeggen tegen nieuwe klanten.", n:"+514" },
+  bob:        { id:"9l0iz2lszo", who:"Padeltrainer Bob",     branche:"Padel",        q:"Ik krijg boekingen en lokale bekendheid.", n:"+10.000" },
+  jaap:       { id:"6wkajknszc", who:"Jaap Vliegenthart",    branche:"Fotograaf",    q:"Je maakt een soort custom plan voor mijn branche.", n:"+3.013" },
+  borntolove: { id:"i51jnuxo4x", who:"Borntolove.be",        branche:"Coach",        q:"Twee deelnemers aan haar retreat vonden haar via een simpele follow.", n:"+1.969" },
+  stenn:      { id:"e5shed6837", who:"Stenn Jewelry",        branche:"Sieradenmerk", q:"Promoview geeft kwalitatief resultaat.", n:"+1.935" }
+};
+
+/* Hooks komen uit het avatar-document: per branche de boodschap die daar aantoonbaar werkt. */
+const NICHES = {
+  "Beauty / salon":        { hook:"Nieuwe klanten uit jouw stad ontdekken je salon, zonder dat jij achter je telefoon hoeft te zitten.", kop:"Lokale bedrijven zoals dat van jou", cases:["hoekje","muurbloem","tuincoach"] },
+  "Bouw / vakmanschap":    { hook:"Jij doet het vakwerk. Wij zorgen dat de regio het ziet.", kop:"Vakmensen en lokale diensten", cases:["tuincoach","hoekje","jaap"] },
+  "Coach / personal brand":{ hook:"Je content is goed. Nu moet de juiste doelgroep hem nog zien.", kop:"Coaches en personal brands", cases:["maud","borntolove","jaap"] },
+  "Horeca / events":       { hook:"Elke week nieuw lokaal publiek voor je volgende event.", kop:"Horeca en events", cases:["muurbloem","borntolove","hoekje"] },
+  "Webshop / merk":        { hook:"Mooie producten verdienen meer dan hetzelfde bereik.", kop:"Merken en webshops", cases:["stenn","hoekje","jaap"] },
+  "Sport / fitness":       { hook:"Word gezien door mensen die jouw sport al volgen.", kop:"Sport en fitness", cases:["bob","maud","tuincoach"] },
+  "Anders":                { hook:"Word gezien door mensen die jouw niche al volgen.", kop:"Bedrijven die je voorgingen", cases:["maud","muurbloem","stenn"] }
+};
+
+const REVIEWS = [
+  ["Indrize","Ik ben zeer tevreden over PromoView. In slechts twee maanden tijd ben ik gegroeid van ongeveer 230 naar bijna 500 volgers. Het belangrijkste is dat dit nog maar het begin lijkt te zijn."],
+  ["Annette Boon","Promoview actively seeks interesting followers for you. It's not just randomly getting your follower numbers up. You see results very quickly. For me, Promoview is money well spent and lots of time saved."],
+  ["Tevreden dienstverlener","Doet exact wat het belooft. Geen problemen met accounts gehad terwijl er ongelofelijk veel beweging op gecreëerd wordt. Laagdrempelig in contact en zeer behulpzaam."]
+];
+
+const TP_STAR = '<i><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8z"/></svg></i>';
+
+
+/* ── Meta Pixel ── (zelfde ID als index.html; leeg = uit) */
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+function pvFbIds(){var c=function(n){var m=document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"));return m?decodeURIComponent(m[1]):null};var o={fbp:c("_fbp"),fbc:c("_fbc")};if(!o.fbc){try{var s=JSON.parse(localStorage.getItem("pv_fbclid")||"null");if(s&&s.id)o.fbc="fb.1."+s.ts+"."+s.id}catch(e){}}return o}(function(){try{var id=new URLSearchParams(location.search).get("fbclid");if(id)localStorage.setItem("pv_fbclid",JSON.stringify({id:id,ts:Date.now()}))}catch(e){}})();
+var PV_LEAD = null; try { PV_LEAD = JSON.parse(localStorage.getItem("pv_lead")); } catch (_) {}
+if (CONFIG.META_PIXEL_ID) {
+  // Advanced matching: de pixel hasht deze gegevens zelf voordat ze naar Meta gaan.
+  var am = {};
+  if (PV_LEAD) {
+    if (PV_LEAD.email) am.em = String(PV_LEAD.email).trim().toLowerCase();
+    if (PV_LEAD.phone) am.ph = String(PV_LEAD.phone).replace(/\D/g, "").replace(/^06/, "316").replace(/^04/, "324");
+    if (PV_LEAD.name) am.fn = String(PV_LEAD.name).trim().split(/\s+/)[0].toLowerCase();
+    if (PV_LEAD.lead_id) am.external_id = PV_LEAD.lead_id;
+  }
+  fbq("init", CONFIG.META_PIXEL_ID, am);
+  fbq("track", "PageView");
+} else {
+  window.fbq = function () {};
+}
+
+window.dataLayer = window.dataLayer || [];
+function track(event, params = {}) {
+  const props = Object.assign({}, pvBaseProps(), params);
+  const payload = { event, ...props, ts: Date.now() };
+  window.dataLayer.push(payload);
+  try { window.posthog && window.posthog.capture(event, props); } catch (_) {}
+  if (!CONFIG.STRIPE_PAYMENT_LINK) console.log("[track]", payload);
+}
+
+let lead = null;
+try { lead = JSON.parse(localStorage.getItem("pv_lead")); } catch (_) {}
+// Val terug op URL-parameters als er geen localStorage-lead is (bv. iemand opent
+// deze link vanuit een e-mail, op een ander apparaat of in een andere browser).
+if (!lead) {
+  try {
+    var qp = new URLSearchParams(location.search);
+    var slugMap = { beauty: "Beauty / salon", bouw: "Bouw / vakmanschap", coach: "Coach / personal brand", horeca: "Horeca / events", webshop: "Webshop / merk", sport: "Sport / fitness" };
+    var qNicheRaw = qp.get("niche") || "";
+    // Accepteert zowel de volledige naam (zoals opgeslagen in GHL, bv. "Beauty / salon")
+    // als de korte slug (zoals gebruikt in advertentielinks, bv. "beauty").
+    var qNiche = NICHES[qNicheRaw] ? qNicheRaw : slugMap[qNicheRaw.toLowerCase()];
+    var qName = qp.get("name");
+    if (qNiche || qName) {
+      lead = { name: qName || null, niche: qNiche || null, lead_id: qp.get("lead_id") || null, email: qp.get("email") || null };
+    }
+  } catch (_) {}
+}
+const niche = (lead && NICHES[lead.niche]) ? lead.niche : "Anders";
+const N = NICHES[niche];
+try { fbq("track", "ViewContent", { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem" }, { eventID: "vc_" + (lead ? lead.lead_id : Date.now().toString(36)) }); } catch (_) {}
+track("page_view", { page: "start", version: "v5-start5", lead_id: lead ? lead.lead_id : null, niche: niche });
+
+if (lead && lead.name) {
+  document.getElementById("kop").textContent = lead.name + ", je doelgroepscan komt eraan.";
+} else {
+  document.getElementById("intro").innerHTML =
+    'PromoView kost <b>€190 per maand excl. btw</b>: een vast bedrag, geen setupkosten en elke maand opzegbaar. Nog geen doelgroepscan aangevraagd? <a href="v5.html">Vraag hem gratis aan</a>.';
+}
+document.getElementById("hook").textContent = N.hook;
+document.getElementById("caseKop").textContent = N.kop;
+
+document.getElementById("caseGrid").innerHTML = N.cases.map(k => {
+  const c = CASES[k];
+  return '<div class="card video-card">' +
+    '<div class="video-frame" data-wistia="' + c.id + '" data-name="' + k + '" role="button" tabindex="0" aria-label="Speel video af: ' + c.who + '">' +
+    '<div class="video-poster"><div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div></div>' +
+    '<div class="video-meta"><div class="who">' + c.who + '</div><div class="q">"' + c.q + '"</div>' +
+    '<div class="n">' + c.n + '<small>volgers · ' + c.branche + '</small></div></div></div>';
+}).join("");
+
+document.getElementById("revGrid").innerHTML = REVIEWS.map(function (r) {
+  return '<div class="card"><div class="nm">' + r[0] + '</div><span class="tp-stars">' + TP_STAR.repeat(5) +
+    '</span><p>"' + r[1] + '"</p><div class="src">via Trustpilot</div></div>';
+}).join("");
+
+function loadVideo(f) {
+  if (f.querySelector("iframe")) return;
+  const i = document.createElement("iframe");
+  i.src = "https://fast.wistia.net/embed/iframe/" + f.dataset.wistia + "?autoPlay=true";
+  i.allow = "autoplay; fullscreen";
+  i.allowFullscreen = true;
+  f.appendChild(i);
+  f.querySelector(".video-poster").style.display = "none";
+  track("video_play", { video: f.dataset.name, niche: niche });
+}
+document.querySelectorAll(".video-frame").forEach(function (f) {
+  f.addEventListener("click", function () { loadVideo(f); });
+  f.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); loadVideo(f); } });
+});
+
+(function () {
+  const API = "https://fast.wistia.com/oembed?url=https%3A%2F%2Fhome.wistia.com%2Fmedias%2F";
+  let n = 0;
+  function paint(f, u) {
+    const p = f.querySelector(".video-poster");
+    if (!p) return;
+    const i = new Image();
+    i.onload = function () { p.style.backgroundImage = 'url("' + u + '")'; p.classList.add("has-thumb"); };
+    i.src = u;
+  }
+  function grab(f) {
+    const id = f.dataset.wistia;
+    if (!id || f.dataset.thumb) return;
+    f.dataset.thumb = "1";
+    const cb = "wthumb" + (++n) + Math.random().toString(36).slice(2, 7);
+    const s = document.createElement("script");
+    const done = function () { try { delete window[cb]; } catch (e) { window[cb] = void 0; } s.remove(); };
+    window[cb] = function (d) {
+      try { const u = d && d.thumbnail_url; if (u) paint(f, u.replace(/image_crop_resized=\d+x\d+/, "image_crop_resized=800x450")); } catch (e) {}
+      done();
+    };
+    s.onerror = done;
+    s.src = API + encodeURIComponent(id) + "&format=json&callback=" + cb;
+    document.head.appendChild(s);
+  }
+  const frames = document.querySelectorAll(".video-frame");
+  if (!("IntersectionObserver" in window)) { frames.forEach(grab); return; }
+  const io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { grab(e.target); io.unobserve(e.target); } });
+  }, { rootMargin: "400px" });
+  frames.forEach(function (f) { io.observe(f); });
+})();
+
+const stickyBar = document.getElementById("stickyBar");
+new IntersectionObserver(function (es) { stickyBar.classList.toggle("show", !es[0].isIntersecting); }, { threshold: 0 })
+  .observe(document.querySelector(".hero"));
+
+let s50 = false;
+addEventListener("scroll", function () {
+  const d = (scrollY + innerHeight) / document.body.scrollHeight;
+  if (!s50 && d > .5) { s50 = true; track("scroll_50", { page: "start" }); }
+}, { passive: true });
+
+function startGroei(source) {
+  track("checkout_started", { source: source, niche: niche, lead_id: lead ? lead.lead_id : null });
+  track("checkout_start", { source: source, niche: niche, lead_id: lead ? lead.lead_id : null });
+  if (!CONFIG.STRIPE_PAYMENT_LINK) {
+    document.getElementById("payBtn").textContent = "⚠ Stripe Payment Link nog niet ingesteld (zie CONFIG)";
+    return;
+  }
+  const url = new URL(CONFIG.STRIPE_PAYMENT_LINK);
+  if (lead) {
+    url.searchParams.set("prefilled_email", lead.email);
+    url.searchParams.set("client_reference_id", lead.lead_id);
+  }
+  try {
+    fbq("track", "InitiateCheckout", { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem" },
+        { eventID: "ic_" + (lead ? lead.lead_id : Date.now().toString(36)) });
+  } catch (_) {}
+  track("payment_redirect", { lead_id: lead ? lead.lead_id : null });
+  location.href = url.toString();
+}
+
+/* ── Evie: AI-assistent ── */
+const WHATSAPP = "https://wa.me/31685888134";
+const QA = [
+  { chip:"Kan ik altijd opzeggen?", keys:["opzeg","stoppen","contract","vast","pauze"], a:"Ja. Maandelijks opzegbaar. Je kunt ook pauzeren, bijvoorbeeld per seizoen. Opzeggingen bevestigen we altijd schriftelijk met einddatum en laatste factuurmoment. Geen kleine lettertjes." },
+  { chip:"Is dit veilig voor mijn account?", keys:["veilig","hack","2fa","blokk","risico","account"], a:"Ja. Bij de onboarding stellen we 2FA in en leggen we vooraf uit welke meldingen je van Instagram kunt zien en waarom. Geen verrassingen. Veiligheid is stap 1." },
+  { chip:"Zijn dit echte volgers?", keys:["fake","bot","echte","nep","gekocht"], a:"Echte volgers. Groei komt doordat relevante mensen jouw profiel organisch ontdekken. We kopen nooit accounts. Klanten benoemen dat letterlijk in hun reviews." },
+  { chip:"Hoe snel zie ik resultaat?", keys:["snel","wanneer","resultaat","duurt","48"], a:"Binnen 48 uur na je onboarding is het systeem actief, en de eerste profielbezoeken en volgers komen doorgaans in de eerste dagen. Hoeveel verschilt per account en niche, daarom sturen we doorlopend bij." },
+  { chip:"Hoe werkt de garantie?", keys:["garantie","geld terug","terugbetaal","refund"], a:"14 dagen geld terug, geen vragen. Niet tevreden in de eerste twee weken? Eén berichtje naar je contactpersoon en je krijgt je geld terug." },
+  { chip:"Wat gebeurt er na mijn betaling?", keys:["betaling","daarna","onboarding","start","beginnen"], a:"Direct na je betaling kom je op het onboarding-formulier: tien minuten voor je niche, doelgroep en zes vergelijkbare accounts. Daarna koppelen we je account veilig en ben je binnen 48 uur live." },
+  { chip:null, keys:["prijs","kost","duur","190","tarief"], a:"€190 per maand exclusief btw. Dat is €6,30 per dag, maandelijks opzegbaar en zonder setupkosten. Alles zit erin: doelgroeponderzoek, dashboard, optimalisatie en een vast contactpersoon." },
+  { chip:null, keys:["mens","whatsapp","bellen","telefoon","contact","iemand spreken"], a:'Natuurlijk. Je bereikt ons team via <a href="' + WHATSAPP + '" target="_blank" rel="noopener" onclick="track(\'chat_whatsapp_click\')">WhatsApp</a>. We reageren binnen 24 uur, meestal sneller. Of mail naar info@promo-view.nl.' }
+];
+const chatBody = document.getElementById("chatBody"), chipRow = document.getElementById("chipRow");
+let chatOpened = false;
+function toggleChat() {
+  const p = document.getElementById("chatPanel");
+  const open = !p.classList.contains("open");
+  p.classList.toggle("open", open);
+  if (open && !chatOpened) {
+    chatOpened = true;
+    track("chat_open", { lead_id: lead ? lead.lead_id : null });
+    evieSay("Hoi" + (lead && lead.name ? " " + lead.name : "") + "! 👋 Ik ben Evie, de AI-assistent van PromoView. Klik een vraag aan of typ je eigen vraag.");
+    renderChips();
+  }
+}
+function renderChips() {
+  chipRow.innerHTML = QA.filter(function (q) { return q.chip; })
+    .map(function (q) { return '<button type="button" class="qchip" data-i="' + QA.indexOf(q) + '">✦ ' + q.chip + '</button>'; }).join("");
+  chipRow.querySelectorAll(".qchip").forEach(function (c) {
+    c.addEventListener("click", function () {
+      const qa = QA[+c.dataset.i];
+      userSay(qa.chip);
+      track("chat_question", { q: qa.chip });
+      evieTyping(function () { evieSay(qa.a); });
+    });
+  });
+}
+function bubble(cls, html) {
+  const d = document.createElement("div");
+  d.className = "msg " + cls;
+  d.innerHTML = html;
+  chatBody.appendChild(d);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+function userSay(t) { bubble("user", t.replace(/</g, "&lt;")); }
+function evieSay(t) { bubble("evie", t); }
+function evieTyping(done) {
+  const d = document.createElement("div");
+  d.className = "typing";
+  d.innerHTML = "<i></i><i></i><i></i>";
+  chatBody.appendChild(d);
+  chatBody.scrollTop = chatBody.scrollHeight;
+  setTimeout(function () { d.remove(); done(); }, 700 + Math.random() * 500);
+}
+document.getElementById("chatForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const inp = document.getElementById("chatText"), t = inp.value.trim();
+  if (!t) return;
+  inp.value = "";
+  userSay(t);
+  track("chat_freetext", { q: t.slice(0, 120) });
+  const lower = t.toLowerCase();
+  const hit = QA.find(function (q) { return q.keys.some(function (k) { return lower.includes(k); }); });
+  evieTyping(function () {
+    if (hit) evieSay(hit.a);
+    else evieSay('Goede vraag! Die beantwoordt ons team het beste persoonlijk. Stuur een berichtje via <a href="' + WHATSAPP + '" target="_blank" rel="noopener" onclick="track(\'chat_whatsapp_click\')">WhatsApp</a>. We reageren binnen 24 uur.');
+  });
+});
+
+(function () {
+  document.querySelectorAll("section, .hero").forEach(function (sec, idx) {
+    var fired = false, timer = null;
+    var name = sec.id || sec.className.split(" ")[0] || ("section_" + idx);
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        if (en.isIntersecting) {
+          if (!fired && !timer) timer = setTimeout(function () { fired = true; track("section_viewed", { section: name }); io.disconnect(); }, 2000);
+        } else if (timer) { clearTimeout(timer); timer = null; }
+      });
+    }, { threshold: .4 });
+    io.observe(sec);
+  });
+})();
+document.addEventListener("click", function (e) {
+  var btn = e.target.closest(".btn,[data-cta]");
+  if (!btn) return;
+  var sec = btn.closest("section, .hero");
+  track("cta_clicked", { label: (btn.dataset.cta || btn.textContent || "").trim().slice(0, 60), section: sec ? (sec.id || sec.className.split(" ")[0]) : null });
+}, true);
+</script>
+<script>
+/* ── Gedragsmeting (PromoView) ──────────────────────────────────────────
+   scroll_depth 25/50/75/100 · tijd per sectie · laatste sectie bij vertrek
+   page_exit met samenvatting · formulier per veld (alleen index)        */
+(function () {
+  var PAGE = "betaalpagina";
+  var maxPct = 0, hit = {};
+  function onScroll() {
+    var h = document.documentElement, pct = Math.min(100, Math.round((scrollY + innerHeight) / h.scrollHeight * 100));
+    if (pct > maxPct) maxPct = pct;
+    [25, 50, 75, 100].forEach(function (m) { if (pct >= m && !hit[m]) { hit[m] = 1; track("scroll_depth", { pct: m, page: PAGE }); } });
+  }
+  addEventListener("scroll", onScroll, { passive: true });
+  setTimeout(onScroll, 800);
+
+  // Tijd per sectie: telt alleen terwijl de sectie in beeld is én de tab zichtbaar is.
+  var secs = [].slice.call(document.querySelectorAll("header.hero, header, section"));
+  function sid(el) { return el.id || (el.classList.contains("hero") || el.tagName === "HEADER" ? "hero" : el.classList.contains("final") ? "slot" : el.className.split(" ")[0] || "sectie"); }
+  var inView = {}, ms = {}, current = null, ratios = {};
+  function flush(now) {
+    Object.keys(inView).forEach(function (k) { ms[k] = (ms[k] || 0) + (now - inView[k]); inView[k] = now; });
+  }
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) {
+      var now = Date.now();
+      es.forEach(function (e) {
+        var k = sid(e.target);
+        ratios[k] = e.intersectionRatio;
+        if (e.isIntersecting && !document.hidden) { if (!inView[k]) inView[k] = now; }
+        else if (inView[k]) { ms[k] = (ms[k] || 0) + (now - inView[k]); delete inView[k]; }
+      });
+      var best = null, br = 0;
+      Object.keys(ratios).forEach(function (k) { if (ratios[k] > br) { br = ratios[k]; best = k; } });
+      if (best && best !== current) { current = best; }
+    }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+    secs.forEach(function (s) { io.observe(s); });
+  }
+
+  // Formulier per veld (zit in de vragenlijst op index.html).
+  var fieldState = {};
+  ["f-name", "f-email", "f-phone", "f-insta"].forEach(function (id) {
+    var el = document.getElementById(id); if (!el) return;
+    var f = id.replace("f-", ""); fieldState[f] = "leeg";
+    el.addEventListener("focus", function () { track("field_focus", { field: f }); if (fieldState[f] === "leeg") fieldState[f] = "aangeraakt"; });
+    el.addEventListener("blur", function () {
+      var filled = !!el.value.trim(), valid = el.checkValidity ? el.checkValidity() : filled;
+      fieldState[f] = filled ? (valid ? "ingevuld" : "ongeldig") : (fieldState[f] === "leeg" ? "leeg" : "verlaten_leeg");
+      track("field_blur", { field: f, filled: filled, valid: filled && valid, state: fieldState[f] });
+    });
+  });
+  function formSummary() {
+    var o = {}; Object.keys(fieldState).forEach(function (k) { o["field_" + k] = fieldState[k]; }); return o;
+  }
+  // Sluiten van de vragenlijst: laat zien op welke stap en met welke velden.
+  if (typeof window.closeCheckout === "function") {
+    var _close = window.closeCheckout;
+    window.closeCheckout = function () {
+      try {
+        var step = document.querySelector(".qz-step:not([hidden])");
+        track("quiz_abandoned", Object.assign({ step: step ? step.dataset.q : null }, formSummary()));
+      } catch (e) {}
+      return _close.apply(this, arguments);
+    };
+  }
+
+  // Vertrek: één samenvatting per paginabezoek (ook bij wegswipen op mobiel).
+  var sent = false;
+  function exit(reason) {
+    if (sent) return; sent = true;
+    var now = Date.now(); flush(now);
+    var props = { page: PAGE, reason: reason, max_scroll_pct: maxPct, last_section: current };
+    Object.keys(ms).forEach(function (k) { props["sec_" + k + "_s"] = Math.round(ms[k] / 100) / 10; });
+    var modal = document.getElementById("checkoutModal");
+    if (modal) {
+      props.quiz_open = modal.classList.contains("open");
+      var st = document.querySelector(".qz-step:not([hidden])");
+      props.quiz_step = props.quiz_open && st ? st.dataset.q : null;
+      Object.assign(props, formSummary());
+    }
+    var full = Object.assign({}, typeof pvBaseProps === "function" ? pvBaseProps() : {}, props);
+    try { window.dataLayer && window.dataLayer.push(Object.assign({ event: "page_exit", ts: now }, full)); } catch (e) {}
+    try { window.posthog && window.posthog.capture("page_exit", full, { transport: "sendBeacon" }); } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", function () {
+    var now = Date.now();
+    if (document.hidden) { flush(now); exit("tab_verborgen"); }
+    else { Object.keys(inView).forEach(function (k) { inView[k] = now; }); }
+  });
+  addEventListener("pagehide", function () { exit("pagina_verlaten"); });
+})();
+</script>
+<script>
+(function(){var O=window.PV_OFFER;if(!O)return;var mn=["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
+var endTxt=O.end.getDate()+" "+mn[O.end.getMonth()];document.querySelectorAll("[data-offer-end]").forEach(function(e){e.textContent=endTxt});
+var v=O.values||[];var tot=0,have=v.length&&v.every(function(x){return typeof x==="number"});
+document.querySelectorAll("[data-val]").forEach(function(e){var x=v[+e.dataset.val];if(typeof x==="number"){e.innerHTML='<s>€'+x+'</s>';e.hidden=false}});
+if(have){v.forEach(function(x){tot+=x});document.querySelectorAll("[data-val-total]").forEach(function(e){e.innerHTML='Samen t.w.v. <s>€'+tot+'</s> <b>nu €0</b>';e.hidden=false})}
+function pad(n){return(n<10?"0":"")+n}
+function tick(){var ms=O.end-new Date();if(ms<0)ms=0;var d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);
+document.querySelectorAll("[data-cd]").forEach(function(e){var k=e.dataset.cd;e.textContent=k==="d"?d:k==="h"?pad(h):k==="m"?pad(m):pad(s)});
+document.querySelectorAll("[data-cd-short]").forEach(function(e){e.textContent=ms<=0?"verlopen":d>0?(d+(d===1?" dag":" dagen")+" "+pad(h)+"u"):(pad(h)+":"+pad(m)+":"+pad(s))})}
+tick();setInterval(tick,1000);})();
+</script><script>window.PV_SITE_REVIEWS=[["Svenschilten", "https://framerusercontent.com/images/RGoKhny5mxBlx8knAcgjmbHep8Y.jpg", "Heel erg onder de indruk van de organische groei die Promoview voor mijn Instagram-account heeft gerealiseerd. Zeker aan te bevelen! Van 440 naar 975 volgers in 2 maandjes."], ["Noviofit.pt", "https://framerusercontent.com/images/BmDeKPkh3UUvP0UYc0NG2CPyvw.jpg", "Voor mijn fitnessclub had ik meer publiek nodig. Door Promoview zijn we van 850 naar 3200 volgers gegaan in een tijdsbestek van 3 maanden. Ik heb hier tientallen nieuwe klanten uitgehaald. Zeker een aanrader."], ["Rachel_spier", "https://framerusercontent.com/images/o98uA5vBAmLxqDHej15SycGnITs.jpg", "Ik heb een maandje Promoview afgenomen. De samenwerking met Promoview heb ik als super goed ervaren. Kundigheid en expertise maakte onze samenwerking tot een succes. Mijn volgers gingen van 120 naar 402 na 1 maand."], ["Jordy.schilten", "https://framerusercontent.com/images/uSJQoWKl3kc7u4Pe6KYK1Ug3HYU.jpg", "Mijn broer en ik geven bol.com cursussen en zochten naar nieuwe studenten. Op het begin was ik skeptisch, maar wat een wereld van verschil heeft Promoview weten te brengen. Meer dan 850 kwalitatieve volgers gestegen in 1,5 maand, en een een aantal nieuwe studenten."], ["lureparts.nl", "https://framerusercontent.com/images/NBGfQ8nKnyh1HTQUyBY6XBA2xzQ.png", "Prima ervaring met Promoview. Was eerst wat sceptisch, maar het heeft nu wel echt toegevoegde waarde. In een maand tijd plusminus 700 volgers erbij. En geen bots, maar veel potentiele klanten, waarvan er een aantal reeds hebben besteld in mijn webshop. Communicatie met promoview is ook goed. Kortom tevreden."], ["Drivingrich", "https://framerusercontent.com/images/PifQdm263Mr1lwhH0CPmVcr4.png", "Klantenservice is perfect, alles werkt prima, ik ben blij met de hoeveelheid die er gedaan wordt. Ik wens alleen dat er later meerdere opties komen, bijvoorbeeld dat je meer of minder betaald en dat er dan meer of minder interacties worden voltooid. (Ik wil graag dat er meer mensen worden ge-dmed)"], ["_frankboon_", "https://framerusercontent.com/images/bu5JmnwIyBvP5gFH9N5BwqpVo.png", "Fijn om zo consistent te groeien Mooie dienst om toch consistent je social media account met nieuwe volgers te verrijken. Vooral als je veel tijd besteed aan content maken, is het wel zo fijn dat er ook steeds meer mensen je content zien 😊. Plus; de jongens denken ook echt met je mee. Tevreden over de samenwerking tot nu toe 👍"], ["Afservices.io", "https://framerusercontent.com/images/Ubsu2A6J3zhSzkrdzerDHYJKk.png", "Promoview is een totale game-changer voor mijn Instagram. Van 1200 naar 4500 volgers in 4 maanden. Mijn posts krijgen nu veel meer engagement als voorheen. Ook hebben wij er maandelijks veel leads en klanten uitgehaald."], ["Danielschotman", "https://framerusercontent.com/images/ubmkFhc5Vz1Armhf0eBbgCvT04.png", "Betrouwbare partij, in 3 maanden tijd erg veel volgers bijgekregen waarvan sommige klant zijn geworden binnen mijn bedrijf! Zeker een aanrader!"], ["Gardenofeden", "https://framerusercontent.com/images/Zv33yUcoVseEPpcaeaTAYOvgxoA.png", "Ik was al een tijdje op zoek naar iemand die me kon helpen op het gebied van marketing. Na een informatief kennismakingsgesprek was ik volledig overtuigd om het eens te proberen en ik heb nog geen moment spijt ! Ik zit nu in mijn tweede maand dat ik met hun samenwerk en we hebben al een pak volgers bij waar ook veel klanten uit voortgekomen zijn ! Ook volgen ze je heel goed op en vragen regelmatig wat er jij anders zou zien. 100% een aanrader"], ["N1gloves", "https://framerusercontent.com/images/vKptSxgneGahvpz2wD4MluF7PmU.png", "Benaderd door de mannen van Promoview en ik kan niks anders zeggen dan dat ik het iedereen aanraad, hoge kwalitatieve volgers erbij gekregen die daardoor weer tot conversie leiden. Al met al, super tevreden over het werk van Promoview"], ["Jhypes_", "https://framerusercontent.com/images/bnpd4r1pteF9dapI9Spzf5F6o.png", "Duidelijke en goede communicatie van het team en het allerbelangrijkste veel realistische volgers erbij die ook daadwerkelijk voor jouw doelgroep zijn. Top bedrijf!"], ["Saltyhugh", "https://framerusercontent.com/images/0zVdOSHBqwqMoZHn0YaFSjyzWw.png", "Een tijdje geleden in aanraking gekomen met Promoview via Instagram. Top bedrijf! Een goed werkende automation voor meer volgers & engagement + snelle communicatie van uit het Promoview team. Aanrader voor iedereen in de info product business!"], ["Alleskidsindrenthe", "https://framerusercontent.com/images/E0BBFxBeF3O5rtxgAjvp5dQwLE.png", "Echt helemaal te gek!! Was eerst best wel sceptisch maar nu 3 weken onderweg en heel stabiel groeien per week de volgers. Geen gekke profielen met plaatjes van een poes of kip als profielfoto, echte volgers die matchen met het profiel wat we als volgers zouden willen. Complimenten voor het team van promoview en zeker een aanrader om de hulp van in te schakelen"], ["Noemisarpe", "https://framerusercontent.com/images/C7lDhRyaganzLVUYPV93oXqoWRE.png", "Promoview heeft mijn verwachtingen als fotograaf echt overtroffen!"], ["Byroyalsinteriors", "https://framerusercontent.com/images/qWAJKvxDrJrWGlJsoZ9wgyJmR4.png", "Het team heeft de beloften die ze vooraf hebben gedaan, nagekomen. De communicatie is helder en bij vragen krijg je binnen 24 uur een reactie. Daarnaast streven ze ernaar om elke maand te verbeteren en betrekken ze je bij dit proces. De maandelijkse groei is zichtbaar en dit is top!"], ["Olie_vanroos", "https://framerusercontent.com/images/a2uo2qSc5yYw8RI1qaOWPFtOF0M.png", "Het team denkt goed met mij mee en ik zie de resultaten direct terug op mijn feed en de connecties die ik maak."], ["Maestro.ink", "https://framerusercontent.com/images/q9odaNPiP5YhHyBBmZPGMCuf8.png", "Behulpzaam, reageren snel en handelen met ervaring"], ["VickyFoundation", "https://framerusercontent.com/images/M1lnxK1RxdVKYUc4BVMIpRtl4LQ.png", "Goede service En een leuke team"], ["Bor_is_hier", "https://framerusercontent.com/images/pABNXXxzbsWcVK51WTe4JM7s6kk.png", "Fijne communicatie en werkt goed!"], ["Kaynad B.V.", "https://framerusercontent.com/images/NnFle588m7I4xFfiX24GKGY9gOo.png", "De snelle reactietijd en constante beschikbaarheid maakten het hele proces soepel en stressvrij. Ik kan Promoview aan iedereen aanbevelen die op zoek is naar betrouwbare en efficiënte service. Speciale bedankje voor Dennis."], ["Mazzaworldd", "https://framerusercontent.com/images/iJsmlKxjRDsksF55cK3LVYBWTQ.png", "Zeer betrokken en meedenkend. Top service 👍"]];
+function pvEsc(x){return String(x).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function pvRevCard(r){return '<figure class="am-rv"><figcaption class="pv-rvh"><img class="pv-rvimg" src="'+r[1]+'?scale-down-to=128" alt="" loading="lazy" width="44" height="44" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'am-av pv-rvimg\',textContent:\''+pvEsc(r[0].charAt(0).toUpperCase())+'\'}))"><span><b>'+pvEsc(r[0])+'</b><span class="am-stars">★★★★★</span></span></figcaption><blockquote>“'+pvEsc(r[2])+'”</blockquote></figure>'}
+(function(){var g=document.getElementById("revGrid");if(!g)return;g.className="pv2-revs";g.innerHTML=window.PV_SITE_REVIEWS.slice(0,9).map(pvRevCard).join("")})();</script>
+</body>
+</html>
