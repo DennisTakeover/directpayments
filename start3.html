@@ -449,9 +449,22 @@ function startGroei(source) {
     fbq("track", "InitiateCheckout", { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem" },
         { eventID: "ic_" + (lead ? lead.lead_id : Date.now().toString(36)) });
   } catch (_) {}
-  track("payment_redirect", { lead_id: lead ? lead.lead_id : null });
+  if (NATIVE_CHECKOUT) {
+    track("payment_redirect", { lead_id: lead ? lead.lead_id : null, checkout: "native" });
+    location.href = "afrekenen.html?src=" + encodeURIComponent(source || "");
+    return;
+  }
+  track("payment_redirect", { lead_id: lead ? lead.lead_id : null, checkout: "payment_link" });
   location.href = url.toString();
 }
+// Staat de ingebouwde betaling klaar (Stripe-sleutels ingesteld en passend bij elkaar),
+// dan gaat de knop naar /afrekenen. Anders blijft de Payment Link de route.
+var NATIVE_CHECKOUT = false;
+try {
+  fetch("/api/create-checkout-session").then(function (r) { return r.json(); })
+    .then(function (d) { NATIVE_CHECKOUT = !!(d && d.native === true); })
+    .catch(function () {});
+} catch (_) {}
 
 /* ── Evie: AI-assistent ── */
 const WHATSAPP = "https://wa.me/31685888134";

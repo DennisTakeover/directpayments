@@ -142,6 +142,11 @@ function fallback(reason) {
   if (done) return;
   done = true;
   track("checkout_fallback", { reason: reason });
+  if (qs.get("debug")) {
+    document.getElementById("loading").querySelector(".spin").style.display = "none";
+    document.getElementById("loadingTxt").innerHTML = "Ingebouwde betaling niet beschikbaar.<br>Reden: <b>" + String(reason).replace(/</g, "&lt;") + "</b>";
+    return;
+  }
   document.getElementById("loadingTxt").textContent = "Je wordt doorgestuurd naar de beveiligde Stripe-pagina…";
   setTimeout(function () { location.replace(paymentLinkUrl()); }, 250);
 }

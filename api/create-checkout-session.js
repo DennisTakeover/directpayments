@@ -60,8 +60,44 @@ function fallbackUrl(leadId, email) {
   return u.toString();
 }
 
+// "live" of "test" op basis van het voorvoegsel van een Stripe-key (sk_live_, rk_test_, pk_live_ ...).
+function keyMode(key) {
+  const m = /^[a-z]+_(live|test)_/.exec(String(key || "").trim());
+  return m ? m[1] : null;
+}
+
+// GET: laat zien of de ingebouwde betaling klaarstaat, zonder iets aan te maken en
+// zonder sleutels te tonen. De startpagina's gebruiken `native` om te kiezen tussen
+// /afrekenen en de Payment Link; met ?check=1 wordt ook het product bij Stripe opgezocht.
+async function status(req, res) {
+  const sk = process.env.STRIPE_SECRET_KEY, pk = process.env.STRIPE_PUBLISHABLE_KEY;
+  const out = {
+    ok: true,
+    secret_key: sk ? keyMode(sk) || "onbekend formaat" : "ontbreekt",
+    publishable_key: pk ? (/^pk_/.test(pk.trim()) ? keyMode(pk) || "onbekend formaat" : "geen pk_-sleutel") : "ontbreekt",
+  };
+  out.keys_match = !!keyMode(sk) && keyMode(sk) === keyMode(pk) && /^pk_/.test(String(pk).trim());
+  out.native = out.keys_match;
+  if (req.query && req.query.check && sk) {
+    try {
+      offerCache = null;
+      const offer = await getOffer(getStripe());
+      out.product = { gevonden: true, soort: offer.recurring ? "abonnement" : "eenmalig", prijzen: offer.lineItems.length };
+    } catch (err) {
+      out.product = {
+        gevonden: false,
+        fout: String((err && (err.code || err.type)) || "onbekend"),
+        melding: String((err && err.message) || "").replace(/[a-z]+_(live|test)_\w+/g, "<sleutel>").slice(0, 200),
+      };
+      out.native = false;
+    }
+  }
+  return res.status(200).json(out);
+}
+
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
+  if (req.method === "GET") return status(req, res);
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "method_not_allowed" });
 
   let body = req.body;
@@ -79,6 +115,11 @@ module.exports = async (req, res) => {
   const s = getStripe();
   const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
   if (!s || !publishableKey) return fail(503, "native_checkout_not_configured");
+  // Een live secret key met een test publishable key (of andersom) geeft een leeg
+  // betaalformulier: dan liever meteen naar de Payment Link.
+  if (!/^pk_/.test(publishableKey.trim()) || keyMode(process.env.STRIPE_SECRET_KEY) !== keyMode(publishableKey)) {
+    return fail(503, "stripe_keys_mismatch");
+  }
 
   try {
     const offer = await getOffer(s);
@@ -145,7 +186,7 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       ok: true,
       client_secret: session.client_secret,
-      publishable_key: publishableKey,
+      publishable_key: publishableKey.trim(),
       session_id: session.id,
       mode,
     });
