@@ -112,11 +112,14 @@ function countVisit() {
   // De afspraak telt één keer, ook als de landingspagina het seintje van de agenda al opving.
   var first = false;
   try { if (!localStorage.getItem("pv_booked")) { localStorage.setItem("pv_booked", String(Date.now())); first = true; } } catch (_) { first = true; }
-  if (first) {
-    track("booking_completed", { source: "redirect" });
-    try { fbq("track", "Lead", { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem" }); } catch (_) {}
+  if (first) track("booking_completed", { source: "redirect" });
+  // Meta-lead apart bijhouden: de landingspagina stuurt hem alleen als er niet is doorgestuurd.
+  var lead = false;
+  try { if (!localStorage.getItem("pv_meta_lead")) { localStorage.setItem("pv_meta_lead", String(Date.now())); lead = true; } } catch (_) { lead = true; }
+  if (lead) {
+    try { fbq("track", "Lead", { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem" }, { eventID: "booking_" + Date.now().toString(36) }); } catch (_) {}
   }
-  track("booking_thankyou_viewed", { offer: CONFIG.OFFER, counted_booking: first });
+  track("booking_thankyou_viewed", { offer: CONFIG.OFFER, counted_booking: first, sent_meta_lead: lead });
 }
 // In een iframe wachten we even: lukt het doorsturen, dan telt de pagina op volledig scherm.
 if (IN_FRAME) setTimeout(countVisit, 2500); else countVisit();
