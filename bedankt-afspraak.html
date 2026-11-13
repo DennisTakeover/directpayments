@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Je afspraak staat | PromoView</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF8FB;--card:#FFFFFF;--pink:#E84163;--btn:#DE2F55;--ink:#14121A;--dim:#585161;--line:#E5E0EA;--green:#15A34A;--coffee:#7A4A2B}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 520px at 85% -140px,rgba(194,43,175,.10),transparent 70%),radial-gradient(900px 520px at 10% -80px,rgba(232,65,99,.10),transparent 70%),var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:var(--pink)}
+.wrap{max-width:620px;margin:0 auto;padding:0 16px 56px}
+.logo{padding:20px 0 14px;text-align:center;font-weight:800;letter-spacing:.28em;font-size:14px}
+.logo b{border-bottom:3px solid var(--pink);padding-bottom:4px}
+.badge{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:#0f7a37;background:rgba(21,163,74,.09);border:1px solid rgba(21,163,74,.28);padding:7px 14px;border-radius:999px}
+.badge i{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.head{text-align:center}
+h1{font-size:clamp(28px,7vw,40px);line-height:1.12;letter-spacing:-.02em;font-weight:800;margin:14px 0 8px}
+.sub{color:var(--dim);font-size:16px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 18px 50px rgba(26,22,32,.07);padding:20px}
+.coffee{border:2px solid rgba(122,74,43,.35);background:linear-gradient(180deg,#FFF8F1,#FFFFFF 70%);text-align:center}
+.cup{width:72px;height:72px;border-radius:50%;background:#F3E3D3;display:grid;place-items:center;font-size:36px;margin:0 auto 10px}
+.coffee .tag{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--coffee);margin-bottom:6px}
+.coffee h2{font-size:24px;line-height:1.2;letter-spacing:-.01em;font-weight:800;margin-bottom:8px}
+.coffee p{color:#3d3746;font-size:15.5px}
+.coffee .amount{display:inline-block;margin:14px 0 4px;font-size:40px;font-weight:800;letter-spacing:-.03em;color:var(--coffee)}
+.coffee .amount small{font-size:15px;font-weight:600;letter-spacing:0;color:var(--dim)}
+.coffee .fine{font-size:12.5px;color:var(--dim);margin-top:10px}
+h3{font-size:18px;font-weight:800;margin:26px 0 12px}
+.steps{list-style:none;display:grid;gap:10px}
+.steps li{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.n{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#E84163,#C22BAF);color:#fff;font-weight:800;font-size:14px;display:grid;place-items:center;flex:none;margin-top:1px}
+.steps b{display:block;font-size:15.5px}
+.steps span{font-size:14.5px;color:var(--dim)}
+.btn{display:flex;width:100%;align-items:center;justify-content:center;gap:10px;padding:16px 18px;border-radius:14px;font:inherit;font-size:16.5px;font-weight:800;text-decoration:none;cursor:pointer;border:0}
+.btn-wa{background:#fff;color:var(--ink);border:1.5px solid var(--line);margin-top:14px}
+.later{margin-top:22px;text-align:center;font-size:14.5px;color:var(--dim)}
+.later a{font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo"><b>PROMO</b>VIEW</div>
+
+  <div class="head">
+    <span class="badge"><i></i> Je afspraak is ingepland</span>
+    <h1>Top, we spreken elkaar!</h1>
+    <p class="sub">Je gratis Instagram-consult van 30 minuten staat in de agenda. Onze specialist bekijkt je account vooraf.</p>
+  </div>
+
+  <div class="card coffee" id="koffie">
+    <div class="cup" aria-hidden="true">☕</div>
+    <span class="tag">Cadeautje van ons</span>
+    <h2>De koffie is van ons</h2>
+    <p>Ben je er op de afgesproken tijd bij? Dan krijg je van ons een digitale cadeaukaart voor Starbucks.</p>
+    <div class="amount">€5 <small>digitale koffie</small></div>
+    <p>We sturen hem na het gesprek naar je toe.</p>
+    <p class="fine">Eén cadeaukaart per bedrijf, alleen als je op het afgesproken moment aanwezig bent.</p>
+  </div>
+
+  <h3>Zo haal je het meeste uit je consult</h3>
+  <ol class="steps">
+    <li><span class="n">1</span><div><b>Zet de afspraak in je agenda</b><span>Dan mis je hem niet, en je koffie ook niet.</span></div></li>
+    <li><span class="n">2</span><div><b>Zet je Instagram-account op openbaar</b><span>Zo kan onze specialist je profiel vooraf bekijken.</span></div></li>
+    <li><span class="n">3</span><div><b>Bedenk wat je het liefst wilt weten</b><span>Meer volgers, meer aanvragen of juist de juiste doelgroep: wij richten het gesprek daarop.</span></div></li>
+  </ol>
+
+  <a class="btn btn-wa" id="waBtn" href="https://wa.me/31685888134" target="_blank" rel="noopener">Kun je toch niet? Verzet via WhatsApp</a>
+
+  <p class="later">Wil je niet wachten tot het gesprek? <a href="start6.html" id="startLink">Bekijk de prijs en start direct</a></p>
+</div>
+
+<script>
+const CONFIG = {
+  PAGE_VERSION: "afspraak-bedankt-1",
+  OFFER: "koffie_5_starbucks",
+  META_PIXEL_ID: "1766223344686526",
+  POSTHOG_KEY: "phc_kSvVeBDoVN4rSTWzSk48YbYS29qPRQkBrDBzZAzUDQvv",
+  POSTHOG_HOST: "https://eu.i.posthog.com"
+};
+
+// De agenda van GoHighLevel kan deze pagina in zijn eigen venstertje (iframe) openen.
+// Dan vragen we de pagina eromheen om hiernaartoe te gaan, en proberen we het ook zelf.
+var IN_FRAME = false;
+try { IN_FRAME = window.self !== window.top; } catch (_) { IN_FRAME = true; }
+if (IN_FRAME) {
+  try { window.parent.postMessage({ type: "pv-booking-thankyou", url: location.href }, "*"); } catch (_) {}
+  try { window.top.location.href = location.href; } catch (_) {}
+}
+
+!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags on onFeatureFlags onSessionId identify setPersonProperties group resetGroups reset get_distinct_id get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+try {
+  posthog.init(CONFIG.POSTHOG_KEY, { api_host: CONFIG.POSTHOG_HOST, person_profiles: "identified_only", capture_pageview: true, capture_pageleave: true, autocapture: true, session_recording: { maskAllInputs: true } });
+  // page_version en lp_variant van de landingspagina blijven staan.
+  posthog.register({ funnel_page: "afspraak_bedankt", thankyou_version: CONFIG.PAGE_VERSION });
+} catch (_) {}
+
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+try { fbq("init", CONFIG.META_PIXEL_ID); fbq("track", "PageView"); } catch (_) {}
+
+const PAGE_START = Date.now();
+function track(event, props) {
+  const p = Object.assign({ device: innerWidth < 768 ? "mobile" : "desktop", elapsed_ms: Date.now() - PAGE_START, in_frame: IN_FRAME }, props || {});
+  try { window.posthog && posthog.capture(event, p); } catch (_) {}
+}
+
+function countVisit() {
+  // De afspraak telt één keer, ook als de landingspagina het seintje van de agenda al opving.
+  var first = false;
+  try { if (!localStorage.getItem("pv_booked")) { localStorage.setItem("pv_booked", String(Date.now())); first = true; } } catch (_) { first = true; }
+  if (first) {
+    track("booking_completed", { source: "redirect" });
+    try { fbq("track", "Lead", { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem" }); } catch (_) {}
+  }
+  track("booking_thankyou_viewed", { offer: CONFIG.OFFER, counted_booking: first });
+}
+// In een iframe wachten we even: lukt het doorsturen, dan telt de pagina op volledig scherm.
+if (IN_FRAME) setTimeout(countVisit, 2500); else countVisit();
+
+document.getElementById("waBtn").addEventListener("click", function () { track("booking_reschedule_whatsapp_clicked"); });
+document.getElementById("startLink").addEventListener("click", function () { track("booking_thankyou_start_clicked"); });
+</script>
+</body>
+</html>
