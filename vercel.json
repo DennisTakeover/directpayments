@@ -31,6 +31,14 @@
     {
       "source": "/afrekenen",
       "destination": "/afrekenen.html"
+    },
+    {
+      "source": "/v6",
+      "destination": "/v6.html"
+    },
+    {
+      "source": "/afspraak-bevestigd",
+      "destination": "/start6.html"
     }
   ]
 }

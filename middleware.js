@@ -1,9 +1,10 @@
 // A/B-test landingspagina: V3 (v3.html, prijs na gegevens) vs V5 (v5.html, gratis Instagram-consult), 50/50.
 // - Nieuwe bezoeker krijgt willekeurig v3 of v5; cookie pv_lp4 onthoudt dat 30 dagen.
 //   (Nieuwe cookienaam: bezoekers uit eerdere tests worden opnieuw verdeeld.)
-// - Handmatig bekijken: ?lp=v1, ?lp=v2, ?lp=v3, ?lp=v4 of ?lp=v5 (V4 doet niet meer mee aan de test, is alleen nog te bekijken)
+// - Handmatig bekijken: ?lp=v1 t/m ?lp=v6. V4 doet niet meer mee aan de test; V6 (direct een afspraak
+//   inplannen via de agenda) is alleen een preview.
 // - De URL in de browser blijft "/"; de variant wordt server-side ge-rewrite.
-// - V1 -> start.html, V2 -> start2.html, V3 -> start3.html, V4 -> start4.html, V5 -> start5.html.
+// - V1 -> start.html, V2 -> start2.html, V3 -> start3.html, V4 -> start4.html, V5 -> start5.html, V6 -> start6.html (na het inplannen).
 // - Uitzetten: zet AB_SPLIT_B op 0 (iedereen V3) of 1 (iedereen V5).
 import { next, rewrite } from "@vercel/edge";
 
@@ -11,7 +12,7 @@ export const config = { matcher: ["/", "/index.html"] };
 
 const A = "v3", B = "v5";
 const AB_SPLIT_B = 0.5; // aandeel bezoekers dat variant B ziet
-const PAGES = { v2: "/v2.html", v3: "/v3.html", v4: "/v4.html", v5: "/v5.html" };
+const PAGES = { v2: "/v2.html", v3: "/v3.html", v4: "/v4.html", v5: "/v5.html", v6: "/v6.html" };
 
 export default function middleware(request) {
   const url = new URL(request.url);
