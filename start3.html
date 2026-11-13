@@ -442,8 +442,8 @@ function startGroei(source) {
   }
   const url = new URL(CONFIG.STRIPE_PAYMENT_LINK);
   if (lead) {
-    url.searchParams.set("prefilled_email", lead.email);
-    url.searchParams.set("client_reference_id", lead.lead_id);
+    if (lead.email) url.searchParams.set("prefilled_email", lead.email);
+    if (lead.lead_id) url.searchParams.set("client_reference_id", lead.lead_id);
   }
   try {
     fbq("track", "InitiateCheckout", { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem" },

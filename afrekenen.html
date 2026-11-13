@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Afrekenen | PromoView</title>
+<link rel="preconnect" href="https://js.stripe.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/" async></script>
+<style>
+:root{--bg:#FAF8FB;--card:#FFFFFF;--pink:#E84163;--btn:#DE2F55;--ink:#14121A;--dim:#585161;--line:#E5E0EA;--green:#15A34A;--tp:#00B67A}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(900px 520px at 85% -140px,rgba(194,43,175,.10),transparent 70%),radial-gradient(900px 520px at 10% -80px,rgba(232,65,99,.10),transparent 70%),var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:var(--pink)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px 48px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:18px 0 14px}
+.logo{font-weight:800;letter-spacing:.28em;font-size:14px}
+.logo b{border-bottom:3px solid var(--pink);padding-bottom:4px}
+.back{font-size:14px;font-weight:600;color:var(--dim);text-decoration:none}
+.secure{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#0f7a37;background:rgba(21,163,74,.09);border:1px solid rgba(21,163,74,.25);padding:6px 11px;border-radius:999px}
+h1{font-size:clamp(26px,6vw,36px);line-height:1.15;letter-spacing:-.02em;font-weight:800;margin:10px 0 6px}
+.sub{color:var(--dim);font-size:15px;margin-bottom:18px}
+.grid{display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 18px 50px rgba(26,22,32,.07)}
+.sum{padding:18px}
+.sum-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sum-h b{font-size:16px}
+.sum-h span{font-size:13px;font-weight:700;color:var(--green)}
+.price{font-size:40px;font-weight:800;letter-spacing:-.03em;margin:4px 0 2px}
+.price small{font-size:15px;font-weight:500;color:var(--dim);letter-spacing:0}
+.list{list-style:none;margin:10px 0 0;display:grid;gap:6px}
+.list li{display:flex;gap:9px;align-items:flex-start;font-size:14.5px}
+.list li::before{content:"✓";color:var(--green);font-weight:800;flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chips span{font-size:12.5px;font-weight:700;color:#0f7a37;background:rgba(21,163,74,.09);border:1px solid rgba(21,163,74,.25);padding:5px 10px;border-radius:999px}
+.proof{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:13.5px;color:var(--dim)}
+.proof b{color:var(--ink)}
+.proof i{color:var(--tp);font-style:normal}
+.pay{padding:6px;min-height:420px;position:relative;overflow:hidden}
+#checkout{min-height:400px}
+.loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--dim);font-size:15px;font-weight:600;background:var(--card);border-radius:20px}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--pink);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.alt{margin-top:14px;text-align:center;font-size:13.5px;color:var(--dim)}
+.alt a{font-weight:600}
+/* Mobiel: samenvatting compact, zodat het betaalformulier direct in beeld staat. */
+@media(max-width:899px){
+  .sum{padding:14px 16px}
+  .sum .list,.sum .proof{display:none}
+  .price{font-size:32px;margin:2px 0 0}
+  .chips{margin-top:10px}
+  h1{margin-top:4px}
+  .sub{margin-bottom:12px}
+}
+@media(min-width:900px){
+  .grid{grid-template-columns:minmax(0,380px) minmax(0,1fr);align-items:start;gap:24px}
+  .sum{position:sticky;top:20px;padding:24px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" id="backLink" href="/">← Terug</a>
+    <div class="logo"><b>PROMO</b>VIEW</div>
+    <span class="secure">🔒 Beveiligd</span>
+  </div>
+  <h1 id="kop">Rond je start af</h1>
+  <p class="sub">Veilig betalen via Stripe met iDEAL, Bancontact of creditcard.</p>
+
+  <div class="grid">
+    <aside class="card sum">
+      <div class="sum-h"><b>PromoView Groeisysteem</b><span>Maandelijks opzegbaar</span></div>
+      <div class="price">€190<small>/maand excl. btw</small></div>
+      <ul class="list">
+        <li>Dagelijkse groei bij jouw doelgroep</li>
+        <li>Doelgroeponderzoek op maat</li>
+        <li>Groei-dashboard en een vast contactpersoon</li>
+        <li>Live binnen 48 uur</li>
+      </ul>
+      <div class="chips"><span>14 dagen geld terug</span><span>Geen setupkosten</span><span>Geen jaarcontract</span></div>
+      <div class="proof"><span><b>4,8 <i>★</i></b> op Trustpilot, 114 reviews</span><span><b>1.500+</b> bedrijven geholpen</span></div>
+    </aside>
+
+    <main>
+      <div class="card pay">
+        <div id="checkout"></div>
+        <div class="loading" id="loading"><div class="spin"></div><span id="loadingTxt">Beveiligde betaling wordt geladen…</span></div>
+      </div>
+      <p class="alt">Lukt het niet? <a href="#" id="altLink">Betaal via de Stripe-pagina</a> of stel je vraag via <a href="https://wa.me/31685888134" target="_blank" rel="noopener" id="waLink">WhatsApp</a>.</p>
+    </main>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  STRIPE_PAYMENT_LINK: "https://buy.stripe.com/14A9AVd2t5yQ8OK1uPb7y08",
+  SESSION_API_URL: "/api/create-checkout-session",
+  PAGE_VERSION: "afrekenen-1",
+  POSTHOG_KEY: "phc_kSvVeBDoVN4rSTWzSk48YbYS29qPRQkBrDBzZAzUDQvv",
+  POSTHOG_HOST: "https://eu.i.posthog.com",
+  LOAD_TIMEOUT_MS: 12000
+};
+
+!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags on onFeatureFlags onSessionId identify setPersonProperties group resetGroups reset get_distinct_id get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+try {
+  posthog.init(CONFIG.POSTHOG_KEY, { api_host: CONFIG.POSTHOG_HOST, person_profiles: "identified_only", capture_pageview: true, capture_pageleave: true, autocapture: true, session_recording: { maskAllInputs: true } });
+  // Geen page_version registreren: de waarde van de landingspagina moet blijven staan.
+  posthog.register({ funnel_page: "afrekenen", checkout_version: CONFIG.PAGE_VERSION });
+} catch (_) {}
+
+let lead = null;
+try { lead = JSON.parse(localStorage.getItem("pv_lead")); } catch (_) {}
+let quiz = null;
+try { quiz = JSON.parse(localStorage.getItem("pv_quiz")); } catch (_) {}
+const qs = new URLSearchParams(location.search);
+const leadId = (lead && lead.lead_id) || (quiz && quiz.qid) || null;
+const email = lead && lead.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email) ? lead.email : null;
+try { if (lead && lead.lead_id) posthog.identify(lead.lead_id); } catch (_) {}
+
+const PAGE_START = Date.now();
+function track(event, props) {
+  const p = Object.assign({ lead_id: leadId, source: qs.get("src") || null, elapsed_ms: Date.now() - PAGE_START, device: innerWidth < 768 ? "mobile" : "desktop" }, props || {});
+  try { window.posthog && posthog.capture(event, p); } catch (_) {}
+}
+
+function paymentLinkUrl() {
+  const u = new URL(CONFIG.STRIPE_PAYMENT_LINK);
+  if (leadId) u.searchParams.set("client_reference_id", leadId);
+  if (email) u.searchParams.set("prefilled_email", email);
+  return u.toString();
+}
+
+// Vangnet: werkt de ingebouwde betaling niet (niet ingesteld, Stripe onbereikbaar,
+// te traag), dan gaat de klant alsnog naar de bestaande Stripe-pagina.
+let done = false;
+function fallback(reason) {
+  if (done) return;
+  done = true;
+  track("checkout_fallback", { reason: reason });
+  document.getElementById("loadingTxt").textContent = "Je wordt doorgestuurd naar de beveiligde Stripe-pagina…";
+  setTimeout(function () { location.replace(paymentLinkUrl()); }, 250);
+}
+
+function waitForStripe() {
+  return new Promise(function (resolve, reject) {
+    const t0 = Date.now();
+    (function poll() {
+      if (window.Stripe) return resolve();
+      if (Date.now() - t0 > CONFIG.LOAD_TIMEOUT_MS) return reject(new Error("stripe_js_timeout"));
+      setTimeout(poll, 50);
+    })();
+  });
+}
+
+if (lead && lead.name) document.getElementById("kop").textContent = lead.name + ", rond je start af";
+if (document.referrer && document.referrer.indexOf(location.origin) === 0) {
+  document.getElementById("backLink").addEventListener("click", function (e) { e.preventDefault(); history.back(); });
+}
+document.getElementById("altLink").href = paymentLinkUrl();
+document.getElementById("altLink").addEventListener("click", function () { track("checkout_alt_link_clicked"); });
+document.getElementById("waLink").addEventListener("click", function () { track("checkout_whatsapp_clicked"); });
+
+(async function start() {
+  track("checkout_page_viewed");
+  const timer = setTimeout(function () { fallback("timeout"); }, CONFIG.LOAD_TIMEOUT_MS);
+  try {
+    const variant = lead && lead.page_version ? (String(lead.page_version).match(/^v\d+/) || [null])[0] : null;
+    const r = await fetch(CONFIG.SESSION_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lead_id: leadId,
+        email: email,
+        lp_variant: variant,
+        page_version: lead ? lead.page_version : null,
+        niche: lead ? lead.niche : (quiz ? quiz.niche : null),
+        insta: lead ? lead.insta : null,
+        utm_source: lead ? lead.utm_source : null,
+        utm_campaign: lead ? lead.utm_campaign : null,
+        utm_content: lead ? lead.utm_content : null,
+        ad_id: lead ? lead.ad_id : null,
+        adset_id: lead ? lead.adset_id : null,
+        campaign_id: lead ? lead.campaign_id : null
+      })
+    });
+    const d = await r.json().catch(function () { return {}; });
+    if (!r.ok || !d.ok || !d.client_secret || !d.publishable_key) {
+      clearTimeout(timer);
+      return fallback(d.error || "api_" + r.status);
+    }
+    await waitForStripe();
+    const stripe = Stripe(d.publishable_key);
+    const checkout = await stripe.initEmbeddedCheckout({
+      fetchClientSecret: function () { return Promise.resolve(d.client_secret); },
+      onComplete: function () { track("checkout_form_completed", { session_id: d.session_id }); }
+    });
+    if (done) { try { checkout.destroy(); } catch (_) {} return; }
+    checkout.mount("#checkout");
+    clearTimeout(timer);
+    done = true;
+    document.getElementById("loading").hidden = true;
+    document.getElementById("loading").style.display = "none";
+    track("checkout_loaded", { session_id: d.session_id, mode: d.mode, load_ms: Date.now() - PAGE_START });
+  } catch (err) {
+    clearTimeout(timer);
+    fallback("exception:" + String(err && err.message || err).slice(0, 80));
+  }
+})();
+</script>
+</body>
+</html>

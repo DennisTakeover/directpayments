@@ -27,6 +27,10 @@
     {
       "source": "/v5",
       "destination": "/v5.html"
+    },
+    {
+      "source": "/afrekenen",
+      "destination": "/afrekenen.html"
     }
   ]
 }
