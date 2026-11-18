@@ -318,10 +318,30 @@ async function createLinks(req, res, s) {
   return res.status(200).json(out);
 }
 
+// GET ?slack_test=1 stuurt één testbericht naar #direct-payment (via Make).
+// Zelfde beveiliging als ?check=1: alleen previews, of met header x-test-secret.
+async function slackTest(req, res) {
+  const allowed =
+    process.env.VERCEL_ENV !== "production" ||
+    (process.env.TEST_SECRET && req.headers["x-test-secret"] === process.env.TEST_SECRET);
+  if (!allowed) return res.status(403).json({ ok: false, error: "check_not_allowed" });
+  const { sendSlack } = require("./_lib/slack");
+  const { slackPaymentText } = require("./_lib/payment");
+  const voorbeeld = slackPaymentText({
+    id: "cs_voorbeeld", amount_total: 5929, currency: "eur", customer: null,
+    customer_details: { name: "TEST Jan Voorbeeld", phone: "+31612345678", email: "test@voorbeeld.nl" },
+    custom_fields: [{ key: "instagram", text: { value: "@testaccount" } }],
+    metadata: { plan: "doorlopend", lp_variant: "v7", niche: "Kapper / salon", doel: "Meer klanten", utm_source: "ig" },
+  });
+  const r = await sendSlack(":test_tube: _TESTBERICHT, geen echte betaling. Check van de koppeling Make → Slack._\n" + voorbeeld);
+  return res.status(200).json(r);
+}
+
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   const s = getStripe();
   if (req.method === "GET") {
+    if (req.query && req.query.slack_test) return slackTest(req, res);
     if (req.query && req.query.check) return check(req, res, s);
     if (req.query && req.query.create_links) return createLinks(req, res, s);
     return res.status(200).json({ ok: true, configured: !!s, plans: Object.keys(PLANS) });
