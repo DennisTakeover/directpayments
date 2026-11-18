@@ -39,6 +39,9 @@ module.exports = async (req, res) => {
     const paid = session.payment_status === "paid";
     // Bij de €49-test (v7/v8) staat het plan in de metadata: "doorlopend" of "eenmalig".
     const plan = (session.metadata && session.metadata.plan) || null;
+    // Bij de €49-test vraagt Stripe de Instagram-naam (custom field "instagram").
+    const igField = (session.custom_fields || []).find((f) => f.key === "instagram");
+    const insta = igField && igField.text && igField.text.value ? String(igField.text.value).trim() : null;
 
     if (paid) {
       const leadId = session.client_reference_id || null;
@@ -54,6 +57,7 @@ module.exports = async (req, res) => {
             currency: session.currency,
             lead_id: leadId,
             plan,
+            insta,
             source: "verify_payment_client",
           },
         });
@@ -81,6 +85,9 @@ module.exports = async (req, res) => {
           stripe_customer_id: session.customer || null,
           paid_at: new Date((session.created || Date.now() / 1000) * 1000).toISOString(),
           plan,
+          insta,
+          niche: (session.metadata && session.metadata.niche) || null,
+          doel: (session.metadata && session.metadata.doel) || null,
           product: plan ? "test_49_14_dagen" : "groeisysteem_190",
           source: "bedankt_pagina",
         });

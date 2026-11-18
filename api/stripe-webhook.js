@@ -79,6 +79,9 @@ module.exports = async (req, res) => {
           stripe_customer_id: session.customer || null,
           paid_at: new Date((session.created || Date.now() / 1000) * 1000).toISOString(),
           plan: (session.metadata && session.metadata.plan) || null,
+          insta: (() => { const f = (session.custom_fields || []).find((x) => x.key === "instagram"); return f && f.text ? f.text.value : null; })(),
+          niche: (session.metadata && session.metadata.niche) || null,
+          doel: (session.metadata && session.metadata.doel) || null,
           product: session.metadata && session.metadata.plan ? "test_49_14_dagen" : "groeisysteem_190",
         }),
         // Meta Conversions API: Purchase, zelfde event_id als bedankt.html en

@@ -8,6 +8,10 @@ const Stripe = require("stripe");
 //   plan "eenmalig"   (V8): €49 eenmalig, geen abonnement. Na 14 dagen belt het
 //                           team en kiest de klant zelf of hij doorgaat.
 //
+// Er is geen leadformulier vooraf: telefoonnummer en Instagram-naam vraagt Stripe
+// op de betaalpagina. De antwoorden van de check (branche, accountleeftijd, doel)
+// gaan mee als metadata.
+//
 // Het maandbedrag en de instellingen (btw, adres, btw-nummer, kortingscodes)
 // komen van de bestaande €190-Payment Link, zodat de test op hetzelfde product
 // en dezelfde belastinginstellingen draait als de gewone verkoop.
@@ -89,6 +93,9 @@ function buildParams(plan, body, base, settings, minimal) {
     phone: body.phone,
     insta: body.insta,
     niche: body.niche,
+    doel: body.doel,
+    account_ouder_dan_3_maanden: body.leeftijd,
+    bron_knop: body.source,
     lp_variant: body.lp_variant,
     page_version: body.page_version,
     utm_source: body.utm_source,
@@ -114,6 +121,16 @@ function buildParams(plan, body, base, settings, minimal) {
     cancel_url: `${base}${PLANS[plan].page}?checkout=geannuleerd`,
     locale: "nl",
     metadata,
+    // Zonder leadformulier is dit de enige plek waar we nummer en account krijgen.
+    phone_number_collection: { enabled: true },
+    custom_fields: [
+      {
+        key: "instagram",
+        label: { type: "custom", custom: "Instagram-gebruikersnaam" },
+        type: "text",
+        text: { minimum_length: 2, maximum_length: 40 },
+      },
+    ],
   };
   if (leadId) p.client_reference_id = leadId;
   if (email) p.customer_email = email;
