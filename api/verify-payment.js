@@ -37,6 +37,8 @@ module.exports = async (req, res) => {
   try {
     const session = await s.checkout.sessions.retrieve(String(sessionId));
     const paid = session.payment_status === "paid";
+    // Bij de €49-test (v7/v8) staat het plan in de metadata: "doorlopend" of "eenmalig".
+    const plan = (session.metadata && session.metadata.plan) || null;
 
     if (paid) {
       const leadId = session.client_reference_id || null;
@@ -51,6 +53,7 @@ module.exports = async (req, res) => {
             amount_total: session.amount_total ? session.amount_total / 100 : null,
             currency: session.currency,
             lead_id: leadId,
+            plan,
             source: "verify_payment_client",
           },
         });
@@ -77,6 +80,8 @@ module.exports = async (req, res) => {
           stripe_session_id: session.id,
           stripe_customer_id: session.customer || null,
           paid_at: new Date((session.created || Date.now() / 1000) * 1000).toISOString(),
+          plan,
+          product: plan ? "test_49_14_dagen" : "groeisysteem_190",
           source: "bedankt_pagina",
         });
       }
@@ -97,7 +102,7 @@ module.exports = async (req, res) => {
         customData: {
           value: session.amount_total ? session.amount_total / 100 : null,
           currency: session.currency ? String(session.currency).toUpperCase() : "EUR",
-          content_name: "PromoView Groeisysteem",
+          content_name: plan ? "PromoView 14 dagen testen" : "PromoView Groeisysteem",
         },
       });
     }
@@ -108,6 +113,7 @@ module.exports = async (req, res) => {
       amount_total: session.amount_total ? session.amount_total / 100 : null,
       currency: session.currency,
       lead_id: session.client_reference_id || null,
+      plan: (session.metadata && session.metadata.plan) || null,
       email: session.customer_details ? session.customer_details.email : null,
     });
   } catch (e) {

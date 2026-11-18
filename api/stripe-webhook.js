@@ -78,6 +78,8 @@ module.exports = async (req, res) => {
           stripe_session_id: session.id,
           stripe_customer_id: session.customer || null,
           paid_at: new Date((session.created || Date.now() / 1000) * 1000).toISOString(),
+          plan: (session.metadata && session.metadata.plan) || null,
+          product: session.metadata && session.metadata.plan ? "test_49_14_dagen" : "groeisysteem_190",
         }),
         // Meta Conversions API: Purchase, zelfde event_id als bedankt.html en
         // /api/verify-payment (purchase_<session_id>) zodat het één aankoop telt.
@@ -103,6 +105,7 @@ module.exports = async (req, res) => {
           amount_total: session.amount_total ? session.amount_total / 100 : null,
           currency: session.currency,
           lead_id: leadId,
+          plan: (session.metadata && session.metadata.plan) || null,
           source: "stripe_webhook",
         },
       });

@@ -104,6 +104,17 @@ function track(event, params) {
   window.dataLayer.push(Object.assign({ event: event, ts: Date.now() }, props));
   try { window.posthog && window.posthog.capture(event, props); } catch (_) {}
 }
+// Na de €49-test (v7/v8) stuurt Stripe hierheen met ?plan=doorlopend of ?plan=eenmalig.
+(function () {
+  var plan = new URLSearchParams(location.search).get("plan");
+  if (plan !== "doorlopend" && plan !== "eenmalig") return;
+  try { window.posthog && posthog.register({ plan: plan }); } catch (_) {}
+  var h = document.querySelector(".card h1"), p = document.querySelector(".card h1 + p");
+  if (h) h.textContent = "Je test van 14 dagen is gestart!";
+  if (p) p.textContent = plan === "doorlopend"
+    ? "Je hebt €49 betaald voor 14 dagen PromoView, inclusief je gratis profielcheck en bio-optimalisatie. Vul het onboarding-formulier in, dan staat je systeem binnen 48 uur live. Wil je na de test niet door? Zeg vóór dag 14 op, dan betaal je niets meer."
+    : "Je hebt eenmalig €49 betaald voor 14 dagen PromoView, inclusief je gratis profielcheck en bio-optimalisatie. Vul het onboarding-formulier in, dan staat je systeem binnen 48 uur live. Na de test bellen we je om je resultaten door te nemen.";
+})();
 track("bedankt_page_viewed");
 
 // Een bezoek aan deze pagina is nog geen bevestigde betaling: pas als de

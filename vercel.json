@@ -39,6 +39,14 @@
     {
       "source": "/afspraak-bevestigd",
       "destination": "/bedankt-afspraak.html"
+    },
+    {
+      "source": "/v7",
+      "destination": "/v7.html"
+    },
+    {
+      "source": "/v8",
+      "destination": "/v8.html"
     }
   ]
 }
