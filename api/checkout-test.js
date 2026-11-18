@@ -274,7 +274,8 @@ async function createLinks(req, res, s) {
     const testPrice = await findOrCreatePrice(s, "pv_test49_14_dagen_v1", Object.assign({ currency: "eur", unit_amount: TEST_CENTS, product_data: { name: TEST_NAME } }, taxB));
     const monthly = settings.monthly || await findOrCreatePrice(s, "pv_groeisysteem_190_maand_v1", Object.assign({ currency: "eur", unit_amount: MONTH_CENTS, recurring: { interval: "month" }, product_data: { name: "PromoView Groeisysteem" } }, taxB));
 
-    for (const plan of Object.keys(PLANS)) {
+    // We gaan verder met één aanbod: €49 voor 14 dagen, daarna €190 per maand (V7).
+    for (const plan of ["doorlopend"]) {
       try {
         let existing = null;
         for await (const pl of s.paymentLinks.list({ active: true, limit: 100 })) {
