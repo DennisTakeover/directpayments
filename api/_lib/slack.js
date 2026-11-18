@@ -1,5 +1,7 @@
-// Slack-melding via een Incoming Webhook (kanaal #direct-payment).
-// Nodig in Vercel: SLACK_WEBHOOK_URL. Ontbreekt die, dan slaat dit stil over.
+// Slack-melding in #direct-payment, via een Make.com-webhook (scenario
+// "PromoView – betaling naar Slack" zet {{1.text}} in het kanaal).
+// Nodig in Vercel: SLACK_WEBHOOK_URL (de Make-webhook-URL; een Slack
+// Incoming Webhook werkt ook). Ontbreekt die, dan slaat dit stil over.
 async function sendSlack(text) {
   const url = process.env.SLACK_WEBHOOK_URL;
   if (!url) return { ok: false, skipped: "slack_not_configured" };
