@@ -2,7 +2,8 @@ const Stripe = require("stripe");
 const { PostHog } = require("posthog-node");
 const { sendToGhl } = require("./_lib/ghl");
 const { sendMetaEvent } = require("./_lib/meta");
-const { withLinkMetadata, stableUuid, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
+const { sendSlack } = require("./_lib/slack");
+const { claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
 
 let stripe = null;
 function getStripe() {
@@ -74,9 +75,12 @@ async function onPaidSession(s, ph, session) {
   session = await withLinkMetadata(s, session);
   capturePurchase(ph, session, "stripe_webhook");
   const cd = session.customer_details || {};
+  // GHL en Slack één keer per betaling (de bedankpagina kan al gemeld hebben).
+  const first = await claimOnce(s, session);
   await Promise.all([
     // GoHighLevel: contact als betaald markeren (of aanmaken), zodat de juiste opvolging start.
-    sendToGhl("payment", ghlPaymentPayload(session, "stripe_webhook")),
+    first ? sendToGhl("payment", ghlPaymentPayload(session, "stripe_webhook")) : null,
+    first ? sendSlack(slackPaymentText(session)) : null,
     // Meta: zelfde event_id als bedankt.html en /api/verify-payment -> één aankoop.
     sendMetaEvent({
       eventName: "Purchase",
@@ -121,6 +125,10 @@ async function handle(s, ph, event) {
         uuid: stableUuid(`invoice_${o.id}`),
         properties: Object.assign({ amount, currency: o.currency, stripe_invoice_id: o.id, lead_id: distinctFor(sub, null) }, subProps(sub), base),
       });
+      const who = `${o.customer_name || o.customer_email || "klant"}${o.customer_phone ? " (" + localPhone(o.customer_phone) + ")" : ""}`;
+      await sendSlack(afterTrial
+        ? `:tada: *Doorbetaald na de proef:* ${who} betaalt nu €${amount.toFixed(2).replace(".", ",")} per maand. <https://dashboard.stripe.com/customers/${o.customer}|Stripe>`
+        : `:repeat: *Maandbetaling ontvangen:* ${who}, €${amount.toFixed(2).replace(".", ",")}. <https://dashboard.stripe.com/customers/${o.customer}|Stripe>`);
       if (afterTrial) {
         await sendMetaEvent({
           eventName: "Subscribe",
@@ -134,6 +142,7 @@ async function handle(s, ph, event) {
 
     case "invoice.payment_failed": {
       const sub = await subscriptionFor(s, o);
+      await sendSlack(`:warning: *Betaling mislukt:* ${o.customer_name || o.customer_email || "klant"}${o.customer_phone ? " (" + localPhone(o.customer_phone) + ")" : ""}, €${((o.amount_due || 0) / 100).toFixed(2).replace(".", ",")} (poging ${o.attempt_count || 1}). Even contact opnemen. <https://dashboard.stripe.com/customers/${o.customer}|Stripe>`);
       if (ph) ph.capture({
         distinctId: distinctFor(sub, o.customer || o.id),
         event: "payment_failed",
@@ -150,6 +159,10 @@ async function handle(s, ph, event) {
     case "customer.subscription.updated": {
       const prev = (event.data.previous_attributes) || {};
       // Opzegging aangevraagd (stopt aan het eind van de proef of de maand).
+      if (o.cancel_at_period_end && prev.cancel_at_period_end === false) {
+        const end = o.cancel_at || o.current_period_end || o.trial_end || 0;
+        await sendSlack(`:no_entry_sign: *Opzegging aangevraagd*${o.status === "trialing" ? " tijdens de proef" : ""}${end ? `, stopt op ${new Date(end * 1000).toLocaleDateString("nl-NL", { timeZone: "Europe/Amsterdam" })}` : ""}. <https://dashboard.stripe.com/customers/${o.customer}|Stripe>`);
+      }
       if (o.cancel_at_period_end && prev.cancel_at_period_end === false && ph) {
         ph.capture({ distinctId: distinctFor(o, o.customer), event: "subscription_cancel_requested", uuid: stableUuid(event.id), properties: Object.assign({ during_trial: o.status === "trialing" }, subProps(o), base) });
       }

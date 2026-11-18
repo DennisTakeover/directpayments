@@ -44,6 +44,10 @@ p{color:var(--text-dim);margin-bottom:10px}
 }
 .btn:focus-visible{outline:3px solid var(--hot-pink);outline-offset:3px}
 .note{font-size:13px;margin-top:20px}
+.btn-big{font-size:20px;padding:22px 30px;border-radius:16px;margin-top:18px;box-shadow:0 12px 32px rgba(222,47,85,.32);animation:pvpulse 2.4s ease-in-out infinite}
+.btn-sub{font-size:13.5px;margin-top:10px}
+@keyframes pvpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+@media(prefers-reduced-motion:reduce){.btn-big{animation:none}}
 .note a{color:var(--text-dim)}
 
 .card{box-shadow:0 1px 3px rgba(26,22,32,.05)}.sticky-cta,.sticky{box-shadow:0 -6px 24px rgba(26,22,32,.10)}.modal{box-shadow:0 24px 70px rgba(26,22,32,.22)}.chat-panel{box-shadow:0 18px 50px rgba(26,22,32,.18)}.video-frame{background:#111}
@@ -54,12 +58,13 @@ p{color:var(--text-dim);margin-bottom:10px}
   <div class="check">✓</div>
   <h1>Je betaling is gelukt. Welkom bij PromoView!</h1>
   <p>Nog één stap en dan gaan wij voor je aan de slag: het onboarding-formulier. Duurt tien minuten, daarna is je systeem binnen 48 uur actief.</p>
+  <a class="btn btn-big" id="onboardBtn" href="https://form.typeform.com/to/kjy12kQE">Start de onboarding →</a>
+  <p class="btn-sub">Duurt ongeveer 10 minuten · daarna gaan wij voor je aan de slag</p>
   <div class="steps">
     <div><b>1</b><span>Vul het onboarding-formulier in: je niche, je regio en zes vergelijkbare accounts.</span></div>
     <div><b>2</b><span>We koppelen je Instagram-account veilig, inclusief 2FA-check.</span></div>
     <div><b>3</b><span>Binnen 48 uur is het systeem live en jij gaat gewoon weer ondernemen.</span></div>
   </div>
-  <a class="btn" id="onboardBtn" href="#">Start je onboarding →</a>
   <p class="note">Vragen? We reageren binnen 24 uur, persoonlijk, geen ticketsysteem.<br>
     <a href="mailto:info@promo-view.nl">info@promo-view.nl</a></p>
 </div>
@@ -68,7 +73,7 @@ p{color:var(--text-dim);margin-bottom:10px}
    Blijft dit leeg, dan valt de knop automatisch terug op WhatsApp,
    zodat een klant die net betaald heeft nooit op een dood einde landt. */
 const CONFIG = {
-  ONBOARDING_URL: "",
+  ONBOARDING_URL: "https://form.typeform.com/to/kjy12kQE",
   WHATSAPP: "https://wa.me/31685888134",
   META_PIXEL_ID: "1766223344686526",
   POSTHOG_KEY: "phc_kSvVeBDoVN4rSTWzSk48YbYS29qPRQkBrDBzZAzUDQvv",
@@ -131,6 +136,11 @@ track("bedankt_page_viewed");
       if (d && d.ok && d.paid) {
         try { if (d.lead_id) posthog.identify(d.lead_id, { klant: true }); } catch (_) {}
         // purchase_completed komt van de server (ontdubbeld via de Stripe-id); de browser meldt alleen dat hij het zag.
+        try {
+          var hf = { email: d.email, naam: d.name, instagram: d.insta, sessie: d.stripe_session_id, plan: d.plan };
+          var parts = Object.keys(hf).filter(function (k) { return hf[k]; }).map(function (k) { return k + "=" + encodeURIComponent(hf[k]); });
+          if (parts.length && CONFIG.ONBOARDING_URL) document.getElementById("onboardBtn").href = CONFIG.ONBOARDING_URL + "#" + parts.join("&");
+        } catch (_) {}
         track("purchase_confirmed_browser", { amount_total: d.amount_total, currency: d.currency, lead_id: d.lead_id, plan: d.plan, lp_variant: d.lp_variant, stripe_session_id: d.stripe_session_id });
         // Zelfde eventID als de server (purchase_<session_id>): Meta telt dit als één aankoop.
         try { fbq("track", "Purchase", { value: d.amount_total || 190, currency: String(d.currency || "eur").toUpperCase(), content_name: "PromoView Groeisysteem" }, { eventID: "purchase_" + sessionId }); } catch (_) {}

@@ -2,7 +2,8 @@ const Stripe = require("stripe");
 const { PostHog } = require("posthog-node");
 const { sendMetaEvent, clientIp } = require("./_lib/meta");
 const { sendToGhl } = require("./_lib/ghl");
-const { withLinkMetadata, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
+const { sendSlack } = require("./_lib/slack");
+const { claimOnce, slackPaymentText, withLinkMetadata, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
 
 let stripe = null;
 function getStripe() {
@@ -54,11 +55,13 @@ module.exports = async (req, res) => {
     capturePurchase(ph, session, "verify_payment_client");
     if (ph) await ph.shutdown();
 
-    // GoHighLevel "PV - Betaald": vanaf de bedankpagina, na verificatie bij
-    // Stripe. Staat de Stripe-webhook ingesteld, dan stuurt die het seintje al en
-    // slaan we het hier over om dubbele meldingen in GHL te voorkomen.
-    if (!process.env.STRIPE_WEBHOOK_SECRET) {
-      await sendToGhl("payment", ghlPaymentPayload(session, "bedankt_pagina"));
+    // GoHighLevel "PV - Betaald" en Slack #direct-payment: één keer per betaling.
+    // Wie eerst is (bedankpagina of Stripe-webhook) meldt; de stempel staat in Stripe.
+    if (await claimOnce(s, session)) {
+      await Promise.all([
+        sendToGhl("payment", ghlPaymentPayload(session, "bedankt_pagina")),
+        sendSlack(slackPaymentText(session)),
+      ]);
     }
 
     const cd = session.customer_details || {};
@@ -93,5 +96,9 @@ module.exports = async (req, res) => {
     plan: props.plan,
     lp_variant: props.lp_variant,
     stripe_session_id: session.id,
+    // Voor het vooraf invullen van de onboarding (Typeform) op de bedankpagina.
+    email: paid ? ((session.customer_details && session.customer_details.email) || session.customer_email || null) : null,
+    name: paid ? ((session.customer_details && session.customer_details.name) || null) : null,
+    insta: paid ? props.insta : null,
   });
 };

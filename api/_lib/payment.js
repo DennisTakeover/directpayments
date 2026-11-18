@@ -81,6 +81,59 @@ function contentName(session) {
   return session.metadata && session.metadata.plan ? "PromoView 14 dagen testen" : "PromoView Groeisysteem";
 }
 
+// Eén keer melden per betaling (GoHighLevel en Slack), ook al komen de bedankpagina
+// én de Stripe-webhook langs, of laadt de klant de bedankpagina opnieuw. De stempel
+// staat in Stripe zelf, op het abonnement of de betaling.
+async function claimOnce(s, session) {
+  try {
+    const subId = typeof session.subscription === "string" ? session.subscription : session.subscription && session.subscription.id;
+    const piId = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent && session.payment_intent.id;
+    const api = subId ? s.subscriptions : piId ? s.paymentIntents : null;
+    const id = subId || piId;
+    if (!api) return true;
+    const obj = await api.retrieve(id);
+    if (obj.metadata && obj.metadata.pv_gemeld) return false;
+    await api.update(id, { metadata: { pv_gemeld: new Date().toISOString() } });
+    return true;
+  } catch (e) {
+    // Liever één melding te veel dan een gemiste betaling.
+    console.error("[claimOnce]", e && e.message);
+    return true;
+  }
+}
+
+// +31612345678 -> 06 12345678, zodat het team meteen kan bellen.
+function localPhone(p) {
+  if (!p) return "onbekend";
+  const d = String(p).replace(/[^\d+]/g, "");
+  if (/^\+316\d{8}$/.test(d)) return "06 " + d.slice(4);
+  if (/^\+324\d{8}$/.test(d)) return "04" + d.slice(4, 6) + " " + d.slice(6);
+  return d;
+}
+
+const SOURCE = { ig: "Instagram-advertentie", fb: "Facebook-advertentie", an: "Audience Network", email: "e-mail" };
+
+function stripeLink(path) { return `https://dashboard.stripe.com/${path}`; }
+
+// Slack-bericht voor een nieuwe betaling.
+function slackPaymentText(session) {
+  const cd = session.customer_details || {};
+  const p = sessionProps(session);
+  const bedrag = amountOf(session);
+  const wat = p.plan === "doorlopend" ? "€49 test (14 dagen, daarna €190 p/m)" : p.plan === "eenmalig" ? "€49 test (eenmalig)" : "Groeisysteem";
+  const bron = p.lp_variant === "betaallink" ? "vaste betaallink" : (SOURCE[p.utm_source] || p.utm_source || "direct") + (p.utm_content ? ` (${p.utm_content})` : "");
+  const lines = [
+    `:moneybag: *Nieuwe betaling: ${wat}*  €${bedrag != null ? bedrag.toFixed(2).replace(".", ",") : "?"} incl. btw`,
+    `*Naam:* ${cd.name || "onbekend"}   *Tel:* ${localPhone(cd.phone)}`,
+    `*E-mail:* ${cd.email || session.customer_email || "onbekend"}   *Instagram:* ${p.insta || "onbekend"}`,
+  ];
+  if (p.niche || p.doel) lines.push(`*Branche:* ${p.niche || "-"}   *Doel:* ${p.doel || "-"}`);
+  lines.push(`*Bron:* ${bron}`);
+  if (session.customer) lines.push(`<${stripeLink("customers/" + session.customer)}|Bekijk in Stripe>`);
+  lines.push("_Volgende stap: onboarding (Typeform). Bel of app de klant als die niet binnen een dag is ingevuld._");
+  return lines.join("\n");
+}
+
 // Bij een aankoop via een vaste betaallink staat het plan op de link; zet het op de sessie.
 async function withLinkMetadata(s, session) {
   if (!session || !session.payment_link || (session.metadata && session.metadata.plan)) return session;
@@ -93,4 +146,4 @@ async function withLinkMetadata(s, session) {
   }
 }
 
-module.exports = { withLinkMetadata, stableUuid, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName };
+module.exports = { claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName };
