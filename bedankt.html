@@ -130,7 +130,8 @@ track("bedankt_page_viewed");
     .then(function (d) {
       if (d && d.ok && d.paid) {
         try { if (d.lead_id) posthog.identify(d.lead_id, { klant: true }); } catch (_) {}
-        track("purchase_completed", { amount_total: d.amount_total, currency: d.currency, lead_id: d.lead_id });
+        // purchase_completed komt van de server (ontdubbeld via de Stripe-id); de browser meldt alleen dat hij het zag.
+        track("purchase_confirmed_browser", { amount_total: d.amount_total, currency: d.currency, lead_id: d.lead_id, plan: d.plan, lp_variant: d.lp_variant, stripe_session_id: d.stripe_session_id });
         // Zelfde eventID als de server (purchase_<session_id>): Meta telt dit als één aankoop.
         try { fbq("track", "Purchase", { value: d.amount_total || 190, currency: String(d.currency || "eur").toUpperCase(), content_name: "PromoView Groeisysteem" }, { eventID: "purchase_" + sessionId }); } catch (_) {}
       } else {

@@ -2,6 +2,7 @@ const Stripe = require("stripe");
 const { PostHog } = require("posthog-node");
 const { sendMetaEvent, clientIp } = require("./_lib/meta");
 const { sendToGhl } = require("./_lib/ghl");
+const { withLinkMetadata, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
 
 let stripe = null;
 function getStripe() {
@@ -26,104 +27,71 @@ function getPostHog() {
 // tracken - een bezoek aan de bedankpagina is nog geen geslaagde betaling.
 // Dit endpoint is de client-side bevestiging; /api/stripe-webhook is de
 // betrouwbare server-naar-server bron (ook als de klant het tabblad sluit).
+// Beide sturen dezelfde uuid/event_id, dus PostHog en Meta tellen één aankoop.
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Cache-Control", "no-store");
   const sessionId = req.query && req.query.session_id;
   if (!sessionId) return res.status(400).json({ ok: false, error: "missing_session_id" });
 
   const s = getStripe();
   if (!s) return res.status(500).json({ ok: false, error: "stripe_not_configured" });
 
+  let session;
   try {
-    const session = await s.checkout.sessions.retrieve(String(sessionId));
-    const paid = session.payment_status === "paid";
-    // Bij de €49-test (v7/v8) staat het plan in de metadata: "doorlopend" of "eenmalig".
-    const plan = (session.metadata && session.metadata.plan) || null;
-    // Bij de €49-test vraagt Stripe de Instagram-naam (custom field "instagram").
-    const igField = (session.custom_fields || []).find((f) => f.key === "instagram");
-    const insta = igField && igField.text && igField.text.value ? String(igField.text.value).trim() : null;
-
-    if (paid) {
-      const leadId = session.client_reference_id || null;
-      const ph = getPostHog();
-      if (ph) {
-        ph.capture({
-          distinctId: leadId || session.id,
-          event: "purchase_completed",
-          // stable uuid: dezelfde sessie via client én webhook telt maar één keer
-          uuid: `stripe_${session.id}`,
-          properties: {
-            amount_total: session.amount_total ? session.amount_total / 100 : null,
-            currency: session.currency,
-            lead_id: leadId,
-            plan,
-            insta,
-            source: "verify_payment_client",
-          },
-        });
-        await ph.shutdown();
-      }
-      // Meta Conversions API vanuit de browser-sessie van de koper: met IP,
-      // user agent en fbp/fbc voor een betere match. Zelfde event_id als de
-      // pixel op bedankt.html en /api/stripe-webhook -> telt als één aankoop.
-      const cd = session.customer_details || {};
-      // GoHighLevel "PV - Betaald": vanaf de bedankpagina, na verificatie bij
-      // Stripe (een los bezoek aan bedankt.html telt dus nooit als betaling).
-      // Staat de Stripe-webhook ingesteld, dan stuurt die het seintje al en
-      // slaan we het hier over om dubbele meldingen in GHL te voorkomen.
-      if (!process.env.STRIPE_WEBHOOK_SECRET) {
-        await sendToGhl("payment", {
-          event: "payment_completed",
-          payment_status: "betaald",
-          lead_id: leadId,
-          email: cd.email || session.customer_email || null,
-          phone: cd.phone || null,
-          name: cd.name || null,
-          amount: session.amount_total ? session.amount_total / 100 : null,
-          currency: session.currency ? String(session.currency).toUpperCase() : "EUR",
-          stripe_session_id: session.id,
-          stripe_customer_id: session.customer || null,
-          paid_at: new Date((session.created || Date.now() / 1000) * 1000).toISOString(),
-          plan,
-          insta,
-          niche: (session.metadata && session.metadata.niche) || null,
-          doel: (session.metadata && session.metadata.doel) || null,
-          product: plan ? "test_49_14_dagen" : "groeisysteem_190",
-          source: "bedankt_pagina",
-        });
-      }
-      await sendMetaEvent({
-        eventName: "Purchase",
-        eventId: `purchase_${session.id}`,
-        eventSourceUrl: req.headers.referer || undefined,
-        user: {
-          email: cd.email || session.customer_email,
-          phone: cd.phone,
-          name: cd.name,
-          externalId: leadId,
-          ip: clientIp(req),
-          ua: req.headers["user-agent"],
-          fbp: req.query.fbp,
-          fbc: req.query.fbc,
-        },
-        customData: {
-          value: session.amount_total ? session.amount_total / 100 : null,
-          currency: session.currency ? String(session.currency).toUpperCase() : "EUR",
-          content_name: plan ? "PromoView 14 dagen testen" : "PromoView Groeisysteem",
-        },
-      });
-    }
-
-    return res.status(200).json({
-      ok: true,
-      paid,
-      amount_total: session.amount_total ? session.amount_total / 100 : null,
-      currency: session.currency,
-      lead_id: session.client_reference_id || null,
-      plan: (session.metadata && session.metadata.plan) || null,
-      email: session.customer_details ? session.customer_details.email : null,
-    });
+    session = await s.checkout.sessions.retrieve(String(sessionId));
   } catch (e) {
     return res.status(404).json({ ok: false, error: "session_not_found" });
   }
+  session = await withLinkMetadata(s, session);
+
+  // "paid" bij een losse betaling en bij de €49 + proefperiode van V7.
+  const paid = session.payment_status === "paid";
+  const props = sessionProps(session);
+
+  if (paid) {
+    const ph = getPostHog();
+    capturePurchase(ph, session, "verify_payment_client");
+    if (ph) await ph.shutdown();
+
+    // GoHighLevel "PV - Betaald": vanaf de bedankpagina, na verificatie bij
+    // Stripe. Staat de Stripe-webhook ingesteld, dan stuurt die het seintje al en
+    // slaan we het hier over om dubbele meldingen in GHL te voorkomen.
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      await sendToGhl("payment", ghlPaymentPayload(session, "bedankt_pagina"));
+    }
+
+    const cd = session.customer_details || {};
+    await sendMetaEvent({
+      eventName: "Purchase",
+      eventId: `purchase_${session.id}`,
+      eventSourceUrl: req.headers.referer || undefined,
+      user: {
+        email: cd.email || session.customer_email,
+        phone: cd.phone,
+        name: cd.name,
+        externalId: session.client_reference_id || null,
+        ip: clientIp(req),
+        ua: req.headers["user-agent"],
+        fbp: req.query.fbp,
+        fbc: req.query.fbc,
+      },
+      customData: {
+        value: amountOf(session),
+        currency: session.currency ? String(session.currency).toUpperCase() : "EUR",
+        content_name: contentName(session),
+      },
+    });
+  }
+
+  return res.status(200).json({
+    ok: true,
+    paid,
+    amount_total: amountOf(session),
+    currency: session.currency,
+    lead_id: session.client_reference_id || null,
+    plan: props.plan,
+    lp_variant: props.lp_variant,
+    stripe_session_id: session.id,
+  });
 };

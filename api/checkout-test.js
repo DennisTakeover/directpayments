@@ -216,6 +216,104 @@ async function check(req, res, s) {
       out.plans[plan] = { ok: false, fout: String((err && (err.code || err.type)) || "onbekend"), melding: hideKeys(err && err.message) };
     }
   }
+  out.webhook = await webhookStatus(s);
+  return res.status(200).json(out);
+}
+
+// Staat er in Stripe een webhook naar /api/stripe-webhook, met de juiste events?
+const WEBHOOK_EVENTS = [
+  "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
+  "checkout.session.async_payment_failed",
+  "invoice.paid",
+  "invoice.payment_failed",
+  "customer.subscription.trial_will_end",
+  "customer.subscription.updated",
+  "customer.subscription.deleted",
+];
+async function webhookStatus(s) {
+  try {
+    const list = await s.webhookEndpoints.list({ limit: 100 });
+    const ep = list.data.find((e) => /\/api\/stripe-webhook$/.test(e.url) && e.status === "enabled");
+    if (!ep) return { gevonden: false, secret_in_vercel: !!process.env.STRIPE_WEBHOOK_SECRET, nodig: WEBHOOK_EVENTS };
+    const all = ep.enabled_events.includes("*");
+    return {
+      gevonden: true,
+      url: ep.url,
+      api_versie: ep.api_version || "standaard",
+      ontbrekende_events: all ? [] : WEBHOOK_EVENTS.filter((e) => !ep.enabled_events.includes(e)),
+      secret_in_vercel: !!process.env.STRIPE_WEBHOOK_SECRET,
+    };
+  } catch (err) {
+    return { gevonden: null, fout: String((err && (err.code || err.type)) || "onbekend"), melding: hideKeys(err && err.message), secret_in_vercel: !!process.env.STRIPE_WEBHOOK_SECRET };
+  }
+}
+
+// Vaste betaallinks voor de test (om te delen via WhatsApp, DM of e-mail). Zelfde aanbod
+// als de landingspagina; aankopen krijgen lp_variant "betaallink" zodat ze de A/B-test
+// niet vertroebelen. Bestaat de link al, dan wordt hij hergebruikt.
+const LINK_BASE = "https://landing.promo-view.io";
+async function findOrCreatePrice(s, lookupKey, params) {
+  const found = await s.prices.list({ lookup_keys: [lookupKey], active: true, limit: 1 });
+  if (found.data[0]) return found.data[0];
+  return s.prices.create(Object.assign({ lookup_key: lookupKey }, params));
+}
+async function createLinks(req, res, s) {
+  const allowed =
+    process.env.VERCEL_ENV !== "production" ||
+    (process.env.TEST_SECRET && req.headers["x-test-secret"] === process.env.TEST_SECRET);
+  if (!allowed) return res.status(403).json({ ok: false, error: "not_allowed" });
+  if (!s) return res.status(200).json({ ok: false, error: "stripe_not_configured" });
+  const out = { ok: true, links: {} };
+  try {
+    linkCache = null;
+    const settings = await getLinkSettings(s);
+    const link = settings.link;
+    const tax = !!(link && link.automatic_tax && link.automatic_tax.enabled);
+    const taxB = tax ? { tax_behavior: "exclusive" } : {};
+    const testPrice = await findOrCreatePrice(s, "pv_test49_14_dagen_v1", Object.assign({ currency: "eur", unit_amount: TEST_CENTS, product_data: { name: TEST_NAME } }, taxB));
+    const monthly = settings.monthly || await findOrCreatePrice(s, "pv_groeisysteem_190_maand_v1", Object.assign({ currency: "eur", unit_amount: MONTH_CENTS, recurring: { interval: "month" }, product_data: { name: "PromoView Groeisysteem" } }, taxB));
+
+    for (const plan of Object.keys(PLANS)) {
+      try {
+        let existing = null;
+        for await (const pl of s.paymentLinks.list({ active: true, limit: 100 })) {
+          if (pl.metadata && pl.metadata.test === "49_14_dagen" && pl.metadata.plan === plan) { existing = pl; break; }
+        }
+        if (existing) { out.links[plan] = { ok: true, url: existing.url, nieuw: false }; continue; }
+        const metadata = { test: "49_14_dagen", plan, lp_variant: "betaallink", bron: "betaallink" };
+        const p = {
+          metadata,
+          line_items: plan === "doorlopend" ? [{ price: monthly.id, quantity: 1 }, { price: testPrice.id, quantity: 1 }] : [{ price: testPrice.id, quantity: 1 }],
+          after_completion: { type: "redirect", redirect: { url: `${LINK_BASE}/bedankt.html?session_id={CHECKOUT_SESSION_ID}&plan=${plan}` } },
+          phone_number_collection: { enabled: true },
+          custom_fields: [{ key: "instagram", label: { type: "custom", custom: "Instagram-gebruikersnaam" }, type: "text", text: { minimum_length: 2, maximum_length: 40 } }],
+          custom_text: { submit: { message: PLANS[plan].message } },
+        };
+        if (plan === "doorlopend") p.subscription_data = { trial_period_days: TRIAL_DAYS, metadata };
+        else {
+          p.customer_creation = "always";
+          p.payment_intent_data = { description: TEST_NAME, metadata };
+          p.invoice_creation = { enabled: true, invoice_data: { description: TEST_NAME, metadata } };
+        }
+        if (tax) p.automatic_tax = { enabled: true };
+        if (link) {
+          if (link.allow_promotion_codes) p.allow_promotion_codes = true;
+          if (link.billing_address_collection) p.billing_address_collection = link.billing_address_collection;
+          if (link.tax_id_collection && link.tax_id_collection.enabled) p.tax_id_collection = { enabled: true };
+        }
+        const created = await s.paymentLinks.create(p);
+        out.links[plan] = { ok: true, url: created.url, nieuw: true };
+      } catch (err) {
+        out.ok = false;
+        out.links[plan] = { ok: false, fout: String((err && (err.code || err.type)) || "onbekend"), melding: hideKeys(err && err.message) };
+      }
+    }
+  } catch (err) {
+    out.ok = false;
+    out.fout = String((err && (err.code || err.type)) || "onbekend");
+    out.melding = hideKeys(err && err.message);
+  }
   return res.status(200).json(out);
 }
 
@@ -224,6 +322,7 @@ module.exports = async (req, res) => {
   const s = getStripe();
   if (req.method === "GET") {
     if (req.query && req.query.check) return check(req, res, s);
+    if (req.query && req.query.create_links) return createLinks(req, res, s);
     return res.status(200).json({ ok: true, configured: !!s, plans: Object.keys(PLANS) });
   }
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "method_not_allowed" });
