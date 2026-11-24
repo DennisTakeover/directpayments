@@ -113,7 +113,7 @@ module.exports = async (req, res) => {
       first_period: OFFER.first,
       period: OFFER.period,
       // Niet betaald binnen 2 dagen? Dan vervalt de betaallink; er wordt nooit iets afgeschreven.
-      expire_at: new Date(Date.now() + 2 * 86400 * 1000).toISOString(),
+      expire_at: new Date(Date.now() + 2 * 86400 * 1000).toISOString().slice(0, 10), // PayPro wil een datum (JJJJ-MM-DD)
       payment_details: {
         return_url: `${base}/bedankt.html?${leadQ}pay=paypro&plan=doorlopend`,
         cancel_url: `${base}/v7.html?checkout=geannuleerd`,

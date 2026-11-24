@@ -61,6 +61,12 @@ module.exports = async (req, res) => {
         if (!sub.data || !String(sub.data.description || "").startsWith("TEST")) return res.status(400).json({ error: "geen_test" });
         return res.json(await call("DELETE", "/subscriptions/" + encodeURIComponent(q.id)));
       }
+      case "patch_test": {
+        const sub = await call("GET", "/subscriptions/" + encodeURIComponent(q.id || ""));
+        if (!sub.data || !String(sub.data.description || "").startsWith("TEST")) return res.status(400).json({ error: "geen_test" });
+        const r = await call("PATCH", "/subscriptions/" + encodeURIComponent(q.id), { metadata: Object.assign({}, sub.data.metadata, { pv_gemeld: new Date().toISOString() }) });
+        return res.json({ status: r.status, metadata: r.data && r.data.metadata, error: r.data && r.data.error });
+      }
       case "post": {
         if (!["payments", "subscriptions", "customers"].includes(q.path)) return res.status(400).json({ error: "path" });
         let body = {};
