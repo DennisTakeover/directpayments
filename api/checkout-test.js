@@ -319,6 +319,11 @@ async function slackTest(req, res) {
     const second = await boardEvent({ event: "onboarding", key: card.key, list: "onboarding", label: "tfa", comment: "📝 TEST: onboarding ingevuld (kaart mag weg)." });
     return res.status(200).json({ ok: first.ok && second.ok, key: card.key, first, second });
   }
+  // ?slack_test=1&kanaal=onboarding: testbericht naar het onboardingkanaal.
+  if (req.query.kanaal === "onboarding") {
+    const { ONBOARDING_CHANNEL } = require("./_lib/slack");
+    return res.status(200).json(await sendSlack(":test_tube: _TESTBERICHT: hier komen voortaan de onboardings en koppelingen van de €49-test binnen._", ONBOARDING_CHANNEL));
+  }
   const r = await sendSlack(":test_tube: _TESTBERICHT, geen echte betaling. Check van de koppeling Make → Slack._\n" + voorbeeld);
   return res.status(200).json(r);
 }
