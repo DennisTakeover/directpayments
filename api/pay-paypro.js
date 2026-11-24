@@ -4,7 +4,7 @@ const { pp, PayProError, OFFER } = require("./_lib/paypro");
 //
 //   POST /api/pay-paypro  { name, email, phone, insta, country, method, lead_id, quiz/utm-velden }
 //     1. klant aanmaken in PayPro
-//     2. abonnement aanmaken: eerste periode 14 dagen €59,29 (€49 + btw), daarna elke maand
+//     2. abonnement aanmaken: eerste periode 14 dagen €49 (incl. btw), daarna elke maand
 //        €229,90 (€190 + btw), ingaand op de dag dat de proef afloopt
 //     3. de link teruggeven naar de gekozen betaalmethode (iDEAL opent de bank-app).
 //        Die eerste betaling zet ook de machtiging voor de maandelijkse incasso.

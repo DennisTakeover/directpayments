@@ -9,7 +9,7 @@ const { pp, OFFER, verifySignature, webhookSecret, paySession, claimOnceSub } = 
 // PayPro stuurt hier events heen (webhook "PromoView landing" in PayPro, aangemaakt via
 // /api/paypro-setup). Alleen abonnementen uit de eigen betaalstap (metadata.pv = "1") tellen.
 //
-//   subscription.started  eerste betaling (€59,29) binnen -> aankoop: PostHog, GHL, Slack, Meta, Trello
+//   subscription.started  eerste betaling (€49) binnen -> aankoop: PostHog, GHL, Slack, Meta, Trello
 //   payment.paid          betaling op dag 14 en daarna maandelijks -> doorbetaald / maandbetaling
 //   payment.failed        incasso mislukt -> Slack + rood label op de kaart
 //   subscription.canceled abonnement gestopt -> kaart naar "Gestopt"
@@ -78,7 +78,7 @@ async function handle(ph, event) {
       if (!o.subscription) return;
       const sub = await getSub(o.subscription);
       if (!sub || !sub.metadata || sub.metadata.pv !== "1") return;
-      // De eerste betaling (€59,29) loopt via subscription.started; mist die, dan vangt dit hem op.
+      // De eerste betaling (€49) loopt via subscription.started; mist die, dan vangt dit hem op.
       if (o.amount === OFFER.first.amount && !sub.metadata.pv_doorbetaald) return onStarted(ph, sub.id);
       const md = sub.metadata;
       const who = `${md.insta ? "@" + md.insta : "klant"}`;

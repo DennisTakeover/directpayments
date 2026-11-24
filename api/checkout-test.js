@@ -22,7 +22,7 @@ const Stripe = require("stripe");
 // GET ?check=1 maakt van beide varianten een proef-sessie, leest het bedrag en
 // laat hem direct verlopen. Alleen op previews, of met header x-test-secret.
 
-const { TEST_CENTS, MONTH_CENTS, TRIAL_DAYS, TEST_NAME, TEST_DESC, getLinkSettings, findOrCreatePrice, resetCache } = require("./_lib/offer");
+const { TEST_CENTS, TEST_PRICE_KEY, MONTH_CENTS, TRIAL_DAYS, TEST_NAME, TEST_DESC, getLinkSettings, findOrCreatePrice, resetCache } = require("./_lib/offer");
 
 const PLANS = {
   doorlopend: {
@@ -85,7 +85,7 @@ function buildParams(plan, body, base, settings, minimal) {
   const testItem = {
     price_data: Object.assign(
       { currency: "eur", unit_amount: TEST_CENTS, product_data: { name: TEST_NAME, description: TEST_DESC } },
-      tax ? { tax_behavior: "exclusive" } : {}
+      tax ? { tax_behavior: "inclusive" } : {}
     ),
     quantity: 1,
   };
@@ -241,7 +241,7 @@ async function createLinks(req, res, s) {
     const link = settings.link;
     const tax = !!(link && link.automatic_tax && link.automatic_tax.enabled);
     const taxB = tax ? { tax_behavior: "exclusive" } : {};
-    const testPrice = await findOrCreatePrice(s, "pv_test49_14_dagen_v1", Object.assign({ currency: "eur", unit_amount: TEST_CENTS, product_data: { name: TEST_NAME } }, taxB));
+    const testPrice = await findOrCreatePrice(s, TEST_PRICE_KEY, Object.assign({ currency: "eur", unit_amount: TEST_CENTS, product_data: { name: TEST_NAME } }, tax ? { tax_behavior: "inclusive" } : {}));
     const monthly = settings.monthly || await findOrCreatePrice(s, "pv_groeisysteem_190_maand_v1", Object.assign({ currency: "eur", unit_amount: MONTH_CENTS, recurring: { interval: "month" }, product_data: { name: "PromoView Groeisysteem" } }, taxB));
 
     // We gaan verder met één aanbod: €49 voor 14 dagen, daarna €190 per maand (V7).
@@ -251,8 +251,10 @@ async function createLinks(req, res, s) {
         for await (const pl of s.paymentLinks.list({ active: true, limit: 100 })) {
           if (pl.metadata && pl.metadata.test === "49_14_dagen" && pl.metadata.plan === plan) { existing = pl; break; }
         }
-        if (existing) { out.links[plan] = { ok: true, url: existing.url, nieuw: false }; continue; }
-        const metadata = { test: "49_14_dagen", plan, lp_variant: "betaallink", bron: "betaallink" };
+        if (existing && existing.metadata.prijs === "incl_btw") { out.links[plan] = { ok: true, url: existing.url, nieuw: false }; continue; }
+        // Oude link (€49 + btw) uitzetten; de nieuwe rekent €49 inclusief btw.
+        if (existing) { await s.paymentLinks.update(existing.id, { active: false }); out.links[plan + "_oud_uitgezet"] = existing.url; }
+        const metadata = { test: "49_14_dagen", plan, lp_variant: "betaallink", bron: "betaallink", prijs: "incl_btw" };
         const p = {
           metadata,
           line_items: plan === "doorlopend" ? [{ price: monthly.id, quantity: 1 }, { price: testPrice.id, quantity: 1 }] : [{ price: testPrice.id, quantity: 1 }],
@@ -298,7 +300,7 @@ async function slackTest(req, res) {
   const { sendSlack } = require("./_lib/slack");
   const { slackPaymentText } = require("./_lib/payment");
   const voorbeeld = slackPaymentText({
-    id: "cs_voorbeeld", amount_total: 5929, currency: "eur", customer: null,
+    id: "cs_voorbeeld", amount_total: 4900, currency: "eur", customer: null,
     customer_details: { name: "TEST Jan Voorbeeld", phone: "+31612345678", email: "test@voorbeeld.nl" },
     custom_fields: [{ key: "instagram", text: { value: "@testaccount" } }],
     metadata: { plan: "doorlopend", lp_variant: "v7", niche: "Kapper / salon", doel: "Meer klanten", utm_source: "ig" },
@@ -307,7 +309,7 @@ async function slackTest(req, res) {
   if (req.query.board) {
     const { boardEvent, paymentCard } = require("./_lib/board");
     const card = paymentCard({
-      id: "test_" + Date.now().toString(36), amount_total: 5929, currency: "eur", created: Math.floor(Date.now() / 1000),
+      id: "test_" + Date.now().toString(36), amount_total: 4900, currency: "eur", created: Math.floor(Date.now() / 1000),
       customer_details: { name: "TEST Jan Voorbeeld (mag weg)", phone: "+31612345678", email: "test@voorbeeld.nl" },
       custom_fields: [{ key: "instagram", text: { value: "testaccount" } }],
       metadata: { plan: "doorlopend", lp_variant: "v7", niche: "Kapper / salon", doel: "Meer klanten", utm_source: "ig" },

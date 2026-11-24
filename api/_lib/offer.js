@@ -5,7 +5,8 @@
 const PAYMENT_LINK_URL =
   process.env.STRIPE_PAYMENT_LINK_URL || "https://buy.stripe.com/14A9AVd2t5yQ8OK1uPb7y08";
 
-const TEST_CENTS = 4900;
+const TEST_CENTS = 4900; // inclusief btw
+const TEST_PRICE_KEY = "pv_test49_incl_btw_v2";
 const MONTH_CENTS = 19000;
 const TRIAL_DAYS = 14;
 const TEST_NAME = "PromoView – 14 dagen testen";
@@ -44,8 +45,9 @@ async function offerPrices(s) {
   const link = settings.link;
   const tax = !!(link && link.automatic_tax && link.automatic_tax.enabled);
   const taxB = tax ? { tax_behavior: "exclusive" } : {};
-  const test = await findOrCreatePrice(s, "pv_test49_14_dagen_v1",
-    Object.assign({ currency: "eur", unit_amount: TEST_CENTS, product_data: { name: TEST_NAME } }, taxB));
+  // €49 is inclusief btw (geen verrassing op de betaalpagina); de maandprijs blijft €190 excl. btw.
+  const test = await findOrCreatePrice(s, TEST_PRICE_KEY,
+    Object.assign({ currency: "eur", unit_amount: TEST_CENTS, product_data: { name: TEST_NAME } }, tax ? { tax_behavior: "inclusive" } : {}));
   const monthly = settings.monthly || await findOrCreatePrice(s, "pv_groeisysteem_190_maand_v1",
     Object.assign({ currency: "eur", unit_amount: MONTH_CENTS, recurring: { interval: "month" }, product_data: { name: "PromoView Groeisysteem" } }, taxB));
   const value = { test, monthly, tax, link };
@@ -54,7 +56,7 @@ async function offerPrices(s) {
 }
 
 module.exports = {
-  PAYMENT_LINK_URL, TEST_CENTS, MONTH_CENTS, TRIAL_DAYS, TEST_NAME, TEST_DESC,
+  PAYMENT_LINK_URL, TEST_CENTS, TEST_PRICE_KEY, MONTH_CENTS, TRIAL_DAYS, TEST_NAME, TEST_DESC,
   getLinkSettings, findOrCreatePrice, offerPrices,
   resetCache() { linkCache = null; priceCache = null; },
 };

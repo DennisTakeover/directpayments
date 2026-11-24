@@ -200,7 +200,7 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       ok: !!(s && process.env.STRIPE_PUBLISHABLE_KEY),
       publishable_key: process.env.STRIPE_PUBLISHABLE_KEY || null,
-      amount: tax ? 5929 : 4900,
+      amount: 4900, // €49 inclusief btw
       currency: "eur",
       payment_method_types: PM_TYPES,
     });

@@ -5,10 +5,10 @@ const crypto = require("crypto");
 const API = process.env.PAYPRO_API_URL || "https://api.paypro.nl";
 const WEBHOOK_PATH = "/api/paypro-webhook";
 
-// Het aanbod: 14 dagen voor €49 excl. btw, daarna €190 per maand excl. btw,
+// Het aanbod: 14 dagen voor €49 inclusief btw, daarna €190 per maand excl. btw (€229,90),
 // ingaand op de dag dat de proef afloopt.
 const OFFER = {
-  first: { amount: 5929, vat: 21, interval: "day", multiplier: 14 },   // €49 + 21% btw
+  first: { amount: 4900, vat: 21, interval: "day", multiplier: 14 },   // €49 inclusief 21% btw
   period: { amount: 22990, vat: 21, interval: "month", multiplier: 1 }, // €190 + 21% btw
   description: "PromoView – 14 dagen testen, daarna €190 p/m",
 };
@@ -74,7 +74,7 @@ async function paySession(subId) {
   if (md.pv !== "1") return { sub, paid: false, session: null };
   let cust = {};
   try { cust = await pp("GET", "/customers/" + encodeURIComponent(sub.customer)); } catch (_) {}
-  // "active": de eerste betaling (€59,29) is binnen en de machtiging staat.
+  // "active": de eerste betaling (€49) is binnen en de machtiging staat.
   const paid = sub.state === "active" || sub.state === "paused" || sub.state === "canceled" && !!md.pv_gemeld;
   const name = [cust.first_name, cust.last_name].filter(Boolean).join(" ") || null;
   const session = {
