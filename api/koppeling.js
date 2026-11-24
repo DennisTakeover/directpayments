@@ -121,7 +121,7 @@ module.exports = async (req, res) => {
       card_desc: `**Instagram:** https://instagram.com/${insta}\n\n_Koppeling binnengekomen zonder gekoppelde betaling. Zoek de klant op in PayPro en zet deze info op de juiste kaart._`,
       comment: `🔐 **Instagram-gegevens ontvangen** (${now}) via de koppelpagina${code ? ", inclusief back-upcode" : ""}.${where}`,
     }),
-    sendSlack(`:closed_lock_with_key: *Account gekoppeld:* @${insta} heeft zijn Instagram-gegevens doorgegeven${code ? " (met back-upcode)" : ""}. ${demo ? " _(demo: gegevens niet opgeslagen)_" : " Staat op de Trello-kaart, alleen zichtbaar met de teamcode."}${key ? "" : " _Geen betaling gevonden bij deze Instagram-naam: even controleren._"}`, ONBOARDING_CHANNEL),
+    sendSlack(`:closed_lock_with_key: *Account gekoppeld:* @${insta} heeft zijn Instagram-gegevens doorgegeven${code ? " (met back-upcode)" : ""}.${demo ? " _(demo: gegevens niet opgeslagen)_" : " Staat op de Trello-kaart, alleen zichtbaar met de teamcode."}${key ? "" : " _Geen betaling gevonden bij deze Instagram-naam: even controleren._"}`, ONBOARDING_CHANNEL),
   ]);
   const ph = getPostHog();
   if (ph) {
