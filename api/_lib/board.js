@@ -61,7 +61,8 @@ function paymentCard(session, extra) {
     `**Proef loopt tot:** ${nlDate(trialEnd)}`,
     `**Bron:** ${bron}`,
   ];
-  if (session.customer) lines.push(`**Stripe:** https://dashboard.stripe.com/customers/${session.customer}`);
+  if (session.provider === "paypro") lines.push(`**PayPro:** https://app.paypro.nl/subscriptions/${session.id}`);
+  else if (session.customer) lines.push(`**Stripe:** https://dashboard.stripe.com/customers/${session.customer}`);
   lines.push("", `Ref: ${keyOf(session)}`);
   return {
     event: "betaald",

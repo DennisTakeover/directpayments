@@ -132,22 +132,29 @@ track("bedankt_page_viewed");
 // Vereist dat de Stripe Payment Link (Dashboard > Payment Links > bewerken >
 // "Na betaling") doorstuurt naar deze pagina met ?session_id={CHECKOUT_SESSION_ID}.
 (function () {
-  var sessionId = PV_Q.get("session_id"), subId = PV_Q.get("sub");
-  if (!sessionId && !subId) { track("purchase_unconfirmed", { reason: "missing_session_id" }); return; }
+  var sessionId = PV_Q.get("session_id"), subId = PV_Q.get("sub") || PV_Q.get("pp");
+  // PayPro: ?pay=paypro&pv_lead=... (de server zoekt het abonnement op lead_id).
+  var ppLead = PV_Q.get("pay") === "paypro" ? PV_Q.get("pv_lead") : null;
+  if (!ppLead && PV_Q.get("pay") === "paypro") { try { var LL = JSON.parse(localStorage.getItem("pv_lead") || "{}"); ppLead = LL.lead_id || null; if (!subId && LL.provider === "paypro") subId = LL.sub || null; } catch (_) {} }
+  var isPP = PV_Q.get("pay") === "paypro" || /^PS/.test(subId || "");
+  if (!sessionId && !subId && !ppLead) { track("purchase_unconfirmed", { reason: "missing_session_id" }); return; }
   var fb = pvFbIds(), tries = 0;
   (function verify() {
   tries++;
-  fetch("/api/verify-payment?" + (subId ? "sub=" + encodeURIComponent(subId) : "session_id=" + encodeURIComponent(sessionId)) + (fb.fbp ? "&fbp=" + encodeURIComponent(fb.fbp) : "") + (fb.fbc ? "&fbc=" + encodeURIComponent(fb.fbc) : ""))
+  var q = isPP ? (subId ? "pp=" + encodeURIComponent(subId) : "pay=paypro&pv_lead=" + encodeURIComponent(ppLead))
+    : (subId ? "sub=" + encodeURIComponent(subId) : "session_id=" + encodeURIComponent(sessionId));
+  fetch("/api/verify-payment?" + q + (fb.fbp ? "&fbp=" + encodeURIComponent(fb.fbp) : "") + (fb.fbc ? "&fbc=" + encodeURIComponent(fb.fbc) : ""))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d && d.ok && d.paid) {
         try { if (d.lead_id) posthog.identify(d.lead_id, { klant: true }); } catch (_) {}
         // purchase_completed komt van de server (ontdubbeld via de Stripe-id); de browser meldt alleen dat hij het zag.
-        try { var L = JSON.parse(localStorage.getItem("pv_lead") || "{}"); L.sub = subId || L.sub; L.insta = d.insta || L.insta; localStorage.setItem("pv_lead", JSON.stringify(L)); } catch (_) {}
+        try { var L = JSON.parse(localStorage.getItem("pv_lead") || "{}"); L.sub = d.stripe_session_id || subId || L.sub; L.insta = d.insta || L.insta; localStorage.setItem("pv_lead", JSON.stringify(L)); } catch (_) {}
+        try { if (d.stripe_session_id && CONFIG.ONBOARDING_URL) document.getElementById("onboardBtn").href = CONFIG.ONBOARDING_URL + "?ref=" + encodeURIComponent(d.stripe_session_id); } catch (_) {}
         track("purchase_confirmed_browser", { amount_total: d.amount_total, currency: d.currency, lead_id: d.lead_id, plan: d.plan, lp_variant: d.lp_variant, stripe_session_id: d.stripe_session_id });
         // Zelfde eventID als de server (purchase_<session_id>): Meta telt dit als één aankoop.
         try { fbq("track", "Purchase", { value: d.amount_total || 190, currency: String(d.currency || "eur").toUpperCase(), content_name: "PromoView Groeisysteem" }, { eventID: "purchase_" + (d.stripe_session_id || sessionId || subId) }); } catch (_) {}
-      } else if (subId && tries < 6) {
+      } else if ((subId || ppLead) && tries < (isPP ? 10 : 6)) {
         setTimeout(verify, 2000);
       } else {
         track("purchase_unconfirmed", { reason: "not_paid", tries: tries });

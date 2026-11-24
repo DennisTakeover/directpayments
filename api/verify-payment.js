@@ -4,6 +4,7 @@ const { sendMetaEvent, clientIp } = require("./_lib/meta");
 const { sendToGhl } = require("./_lib/ghl");
 const { sendSlack } = require("./_lib/slack");
 const { boardEvent, paymentCard } = require("./_lib/board");
+const { paySession, claimOnceSub, findSubByLead } = require("./_lib/paypro");
 const { nativeSession, claimOnce, slackPaymentText, withLinkMetadata, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
 
 let stripe = null;
@@ -36,13 +37,23 @@ module.exports = async (req, res) => {
   const sessionId = req.query && req.query.session_id;
   // ?sub=... komt van de eigen betaalstap (/api/pay): abonnement in plaats van Checkout Session.
   const subId = req.query && req.query.sub;
-  if (!sessionId && !subId) return res.status(400).json({ ok: false, error: "missing_session_id" });
+  // PayPro: ?pp=PS... of ?pay=paypro&pv_lead=... (het abonnement wordt dan op lead_id gezocht).
+  const ppLead = req.query && req.query.pay === "paypro" ? req.query.pv_lead : null;
+  let ppSub = req.query && req.query.pp;
+  if (!sessionId && !subId && !ppSub && !ppLead) return res.status(400).json({ ok: false, error: "missing_session_id" });
 
   const s = getStripe();
-  if (!s) return res.status(500).json({ ok: false, error: "stripe_not_configured" });
+  if (!s && !ppSub && !ppLead) return res.status(500).json({ ok: false, error: "stripe_not_configured" });
 
-  let session;
-  if (subId) {
+  let session, ppData = null;
+  if (ppSub || ppLead) {
+    try {
+      if (!ppSub) ppSub = await findSubByLead(String(ppLead));
+      ppData = ppSub ? await paySession(String(ppSub)) : null;
+    } catch (e) { ppData = null; }
+    session = ppData && ppData.session;
+    if (!session) return res.status(404).json({ ok: false, error: "session_not_found" });
+  } else if (subId) {
     try { session = (await nativeSession(s, subId)).session; } catch (e) { session = null; }
     if (!session) return res.status(404).json({ ok: false, error: "session_not_found" });
   } else {
@@ -65,7 +76,7 @@ module.exports = async (req, res) => {
 
     // GoHighLevel "PV - Betaald" en Slack #direct-payment: één keer per betaling.
     // Wie eerst is (bedankpagina of Stripe-webhook) meldt; de stempel staat in Stripe.
-    if (await claimOnce(s, session)) {
+    if (ppData ? await claimOnceSub(ppData.sub) : await claimOnce(s, session)) {
       await Promise.all([
         sendToGhl("payment", ghlPaymentPayload(session, "bedankt_pagina")),
         sendSlack(slackPaymentText(session)),

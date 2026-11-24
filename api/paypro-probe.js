@@ -40,6 +40,27 @@ module.exports = async (req, res) => {
       case "hooks": return res.json(await call("GET", "/webhooks"));
       case "sub": return res.json(await call("GET", "/subscriptions/" + encodeURIComponent(q.id || "")));
       case "pay": return res.json(await call("GET", "/payments/" + encodeURIComponent(q.id || "")));
+      // Webhook naar de live site aanmaken (één keer, bij livegang). Bestaat hij al, dan niets doen.
+      case "create_webhook": {
+        const url = "https://landing.promo-view.io/api/paypro-webhook";
+        const list = await call("GET", "/webhooks");
+        const found = ((list.data && list.data.data) || []).find((w) => w.url === url);
+        if (found) return res.json({ ok: true, created: false, id: found.id, active: found.active });
+        const r = await call("POST", "/webhooks", {
+          name: "PromoView landing",
+          description: "Eigen betaalstap landing.promo-view.io (abonnementen 14 dagen test)",
+          url,
+          active: true,
+          enabled_event_types: ["subscription.started", "subscription.canceled", "subscription.paused", "payment.paid", "payment.failed", "chargeback.created"],
+        });
+        return res.json({ ok: r.status < 300, created: true, status: r.status, id: r.data && r.data.id, error: r.data && r.data.error });
+      }
+      // Alleen testabonnementen (omschrijving begint met "TEST") annuleren.
+      case "cancel_test": {
+        const sub = await call("GET", "/subscriptions/" + encodeURIComponent(q.id || ""));
+        if (!sub.data || !String(sub.data.description || "").startsWith("TEST")) return res.status(400).json({ error: "geen_test" });
+        return res.json(await call("DELETE", "/subscriptions/" + encodeURIComponent(q.id)));
+      }
       case "post": {
         if (!["payments", "subscriptions", "customers"].includes(q.path)) return res.status(400).json({ error: "path" });
         let body = {};

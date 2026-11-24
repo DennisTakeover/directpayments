@@ -129,7 +129,8 @@ function slackPaymentText(session) {
   ];
   if (p.niche || p.doel) lines.push(`*Branche:* ${p.niche || "-"}   *Doel:* ${p.doel || "-"}`);
   lines.push(`*Bron:* ${bron}`);
-  if (session.customer) lines.push(`<${stripeLink("customers/" + session.customer)}|Bekijk in Stripe>`);
+  if (session.provider === "paypro") lines.push(`<https://app.paypro.nl/subscriptions/${session.id}|Bekijk in PayPro>`);
+  else if (session.customer) lines.push(`<${stripeLink("customers/" + session.customer)}|Bekijk in Stripe>`);
   lines.push("_Volgende stap: onboarding (Typeform). Bel of app de klant als die niet binnen een dag is ingevuld._");
   return lines.join("\n");
 }

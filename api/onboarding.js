@@ -3,6 +3,7 @@ const { PostHog } = require("posthog-node");
 const { sendSlack } = require("./_lib/slack");
 const { boardEvent } = require("./_lib/board");
 const { nativeSession, stableUuid, localPhone } = require("./_lib/payment");
+const { paySession } = require("./_lib/paypro");
 
 // De eigen onboarding (onboarding.html), een kortere versie van de Typeform.
 //
@@ -73,8 +74,15 @@ function readBody(req) {
 // Klantgegevens bij de betaling: eigen betaalstap (sub_...) of Stripe Checkout (cs_...).
 async function lookup(s, ref) {
   ref = clean(ref, 120);
-  if (!s || !ref) return null;
+  if (!ref) return null;
   try {
+    if (/^PS[A-Z0-9]+$/.test(ref)) {
+      const { session, paid } = await paySession(ref);
+      if (!session || !paid) return null;
+      const cd = session.customer_details || {};
+      return { ref, subId: ref, name: cd.name, email: cd.email, phone: cd.phone, insta: (session.metadata || {}).insta, md: session.metadata || {}, leadId: session.client_reference_id, paypro: true };
+    }
+    if (!s) return null;
     if (/^sub_\w+$/.test(ref)) {
       const { session, paid } = await nativeSession(s, ref);
       if (!session || !paid) return null;
@@ -238,7 +246,7 @@ module.exports = async (req, res) => {
   await Promise.all([
     board,
     sendSlack(lines.join("\n")),
-    k && k.subId && s ? s.subscriptions.update(k.subId, { metadata: { onboarding_ingevuld: new Date().toISOString() } }).catch(() => null) : null,
+    k && k.subId && s && !k.paypro ? s.subscriptions.update(k.subId, { metadata: { onboarding_ingevuld: new Date().toISOString() } }).catch(() => null) : null,
   ]);
   if (ph) {
     ph.capture({
