@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const { maakRapporten } = require("./_lib/pdfrapport");
 
 // POST /api/profielcheck-pdf (alleen voor Make, met header x-pv-secret = PROFIELCHECK_SECRET)
-// Body: { insta, test, analyse: {...}, highlights: [{ naam, inhoud, img (base64) }], infographic (base64) }
+// Body: { insta, test, analyse: {...}, highlight_imgs: [base64, ...], infographic (base64) }
 // Antwoord: { ok, pdf1, pdf1_naam, pdf2, pdf2_naam } met de PDF's als base64.
 // De analyse en afbeeldingen komen uit het Make-scenario "PromoView – profielcheck (AI)".
 
@@ -29,7 +29,11 @@ module.exports = async (req, res) => {
   if (!/^[a-z0-9._]{1,30}$/.test(insta)) return res.status(400).json({ ok: false, error: "ongeldige_instagram" });
   const analyse = parse(b.analyse);
   if (!analyse) return res.status(400).json({ ok: false, error: "geen_analyse" });
-  const highlights = (parse(b.highlights) || []).filter((h) => h && typeof h === "object").slice(0, 6);
+  // Iconen: óf als highlights [{naam, inhoud, img}], óf als losse lijst highlight_imgs in dezelfde
+  // volgorde als analyse.highlights (zo stuurt Make ze).
+  const imgs = parse(b.highlight_imgs) || [];
+  const highlights = (parse(b.highlights) || (analyse.highlights || []).map((h, i) => ({ ...h, img: imgs[i] || null })))
+    .filter((h) => h && typeof h === "object").slice(0, 6);
   const test = b.test === true || b.test === "true";
 
   try {
