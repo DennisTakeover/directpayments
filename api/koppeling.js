@@ -92,15 +92,23 @@ module.exports = async (req, res) => {
   const code = clean(b.backup_code, 64);
   if (!insta || pass.length < 4 || pass.length > 200) return res.status(400).json({ ok: false, error: "ongeldig" });
 
-  let token;
+  // Demo-modus (alleen previews, zonder KOPPEL_KEY): de flow werkt, maar wachtwoord en
+  // back-upcode worden weggegooid, nergens opgeslagen of doorgestuurd. Live blijft het streng.
+  let token = null, demo = false;
   try { token = seal({ u: insta, p: pass, c: code, t: new Date().toISOString() }); }
   catch (e) {
-    console.error("[koppeling] sleutel ontbreekt");
-    return res.status(503).json({ ok: false, error: "niet_ingesteld" });
+    if (process.env.VERCEL_ENV === "production") {
+      console.error("[koppeling] sleutel ontbreekt");
+      return res.status(503).json({ ok: false, error: "niet_ingesteld" });
+    }
+    demo = true;
   }
-  const link = `${BASE}/intern/koppeling#${token}`;
+  const link = token ? `${BASE}/intern/koppeling#${token}` : null;
   const key = await findKey(clean(b.ref, 60), insta);
   const now = new Date().toLocaleString("nl-NL", { timeZone: "Europe/Amsterdam", dateStyle: "short", timeStyle: "short" });
+  const where = demo
+    ? "\n_DEMO (preview zonder KOPPEL_KEY): de gegevens zijn niet opgeslagen._"
+    : `\nBekijken (alleen team, met de teamcode): ${link}\nZet daarna het vinkje "Instagram gekoppeld" op deze kaart.`;
 
   await Promise.all([
     boardEvent({
@@ -111,13 +119,13 @@ module.exports = async (req, res) => {
       list: "koppelen",
       card_name: `@${insta} · koppeling (zonder betaling gevonden)`,
       card_desc: `**Instagram:** https://instagram.com/${insta}\n\n_Koppeling binnengekomen zonder gekoppelde betaling. Zoek de klant op in PayPro en zet deze info op de juiste kaart._`,
-      comment: `🔐 **Instagram-gegevens ontvangen** (${now}) via de koppelpagina${code ? ", inclusief back-upcode" : ""}.\nBekijken (alleen team, met de teamcode): ${link}\nZet daarna het vinkje "Instagram gekoppeld" op deze kaart.`,
+      comment: `🔐 **Instagram-gegevens ontvangen** (${now}) via de koppelpagina${code ? ", inclusief back-upcode" : ""}.${where}`,
     }),
-    sendSlack(`:closed_lock_with_key: *Account gekoppeld:* @${insta} heeft zijn Instagram-gegevens doorgegeven${code ? " (met back-upcode)" : ""}. Staat op de Trello-kaart, alleen zichtbaar met de teamcode.${key ? "" : " _Geen betaling gevonden bij deze Instagram-naam: even controleren._"}`, ONBOARDING_CHANNEL),
+    sendSlack(`:closed_lock_with_key: *Account gekoppeld:* @${insta} heeft zijn Instagram-gegevens doorgegeven${code ? " (met back-upcode)" : ""}. ${demo ? " _(demo: gegevens niet opgeslagen)_" : " Staat op de Trello-kaart, alleen zichtbaar met de teamcode."}${key ? "" : " _Geen betaling gevonden bij deze Instagram-naam: even controleren._"}`, ONBOARDING_CHANNEL),
   ]);
   const ph = getPostHog();
   if (ph) {
-    ph.capture({ distinctId: key || "koppeling_" + insta, event: "instagram_gekoppeld", properties: { met_backupcode: !!code, betaling_gevonden: !!key, source: "koppelpagina" } });
+    ph.capture({ distinctId: key || "koppeling_" + insta, event: "instagram_gekoppeld", properties: { met_backupcode: !!code, betaling_gevonden: !!key, demo, source: "koppelpagina" } });
     await ph.shutdown();
   }
   return res.status(200).json({ ok: true });
