@@ -1,6 +1,7 @@
 const Stripe = require("stripe");
 const { PostHog } = require("posthog-node");
 const { sendSlack } = require("./_lib/slack");
+const { boardEvent } = require("./_lib/board");
 const { nativeSession, stableUuid, localPhone } = require("./_lib/payment");
 
 // De eigen onboarding (onboarding.html), een kortere versie van de Typeform.
@@ -207,9 +208,35 @@ module.exports = async (req, res) => {
     `*2FA:* ${a.twee_fa || "-"}${make.ok ? "" : "   :warning: _niet doorgestuurd naar Make, handmatig verwerken_"}`,
   ];
 
+  // Trello: kaart naar "Onboarding binnen", antwoorden als opmerking. Zonder gekoppelde
+  // betaling (of als de kaart nog niet bestaat) maakt Make er een nieuwe kaart voor.
+  const board = boardEvent({
+    event: "onboarding",
+    key: k ? k.subId || k.ref : "onboarding_" + (email || insta),
+    naam: name,
+    insta,
+    list: "onboarding",
+    label: a.twee_fa === "Ja" ? undefined : "tfa",
+    card_name: `@${insta} · ${name || "onbekend"}`,
+    card_desc: [`**Naam:** ${name || "onbekend"}`, `**Telefoon:** ${localPhone(phone)}`, `**E-mail:** ${email || "onbekend"}`,
+      `**Instagram:** https://instagram.com/${insta}`, "", k ? `Ref: ${k.subId || k.ref}` : "_Onboarding zonder gekoppelde betaling: controleer of deze klant betaald heeft._"].join("\n"),
+    comment: [
+      "📝 **Onboarding ingevuld**",
+      `**Bedrijf:** ${a.bedrijf}`,
+      `**Product of dienst:** ${a.product_dienst}`,
+      `**Doelgroep:** ${a.geslacht}, ${a.leeftijd}`,
+      `**Locatie:** ${a.locatie}`,
+      `**Interesses:** ${a.interesses}`,
+      `**Vergelijkbare accounts:** ${profielen.map((p) => "@" + p).join(", ")}`,
+      `**2FA aan:** ${a.twee_fa || "-"}`,
+      a.welkomstbericht ? `**Welkomstbericht:** ${a.welkomstbericht}` : "**Welkomstbericht:** schrijven wij",
+    ].join("\n"),
+  });
+
   const ph = getPostHog();
   const distinct = (k && (k.leadId || md.lead_id)) || email || insta;
   await Promise.all([
+    board,
     sendSlack(lines.join("\n")),
     k && k.subId && s ? s.subscriptions.update(k.subId, { metadata: { onboarding_ingevuld: new Date().toISOString() } }).catch(() => null) : null,
   ]);

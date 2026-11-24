@@ -303,6 +303,20 @@ async function slackTest(req, res) {
     custom_fields: [{ key: "instagram", text: { value: "@testaccount" } }],
     metadata: { plan: "doorlopend", lp_variant: "v7", niche: "Kapper / salon", doel: "Meer klanten", utm_source: "ig" },
   });
+  // ?slack_test=1&board=1: alleen een testkaart op het Trello-bord (geen Slack-bericht).
+  if (req.query.board) {
+    const { boardEvent, paymentCard } = require("./_lib/board");
+    const card = paymentCard({
+      id: "test_" + Date.now().toString(36), amount_total: 5929, currency: "eur", created: Math.floor(Date.now() / 1000),
+      customer_details: { name: "TEST Jan Voorbeeld (mag weg)", phone: "+31612345678", email: "test@voorbeeld.nl" },
+      custom_fields: [{ key: "instagram", text: { value: "testaccount" } }],
+      metadata: { plan: "doorlopend", lp_variant: "v7", niche: "Kapper / salon", doel: "Meer klanten", utm_source: "ig" },
+    });
+    const first = await boardEvent(card);
+    await new Promise((r) => setTimeout(r, 4000));
+    const second = await boardEvent({ event: "onboarding", key: card.key, list: "onboarding", label: "tfa", comment: "📝 TEST: onboarding ingevuld (kaart mag weg)." });
+    return res.status(200).json({ ok: first.ok && second.ok, key: card.key, first, second });
+  }
   const r = await sendSlack(":test_tube: _TESTBERICHT, geen echte betaling. Check van de koppeling Make → Slack._\n" + voorbeeld);
   return res.status(200).json(r);
 }

@@ -3,6 +3,7 @@ const { PostHog } = require("posthog-node");
 const { sendMetaEvent, clientIp } = require("./_lib/meta");
 const { sendToGhl } = require("./_lib/ghl");
 const { sendSlack } = require("./_lib/slack");
+const { boardEvent, paymentCard } = require("./_lib/board");
 const { nativeSession, claimOnce, slackPaymentText, withLinkMetadata, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
 
 let stripe = null;
@@ -68,6 +69,7 @@ module.exports = async (req, res) => {
       await Promise.all([
         sendToGhl("payment", ghlPaymentPayload(session, "bedankt_pagina")),
         sendSlack(slackPaymentText(session)),
+        boardEvent(paymentCard(session)),
       ]);
     }
 

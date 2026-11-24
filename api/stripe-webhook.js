@@ -3,6 +3,7 @@ const { PostHog } = require("posthog-node");
 const { sendToGhl } = require("./_lib/ghl");
 const { sendMetaEvent } = require("./_lib/meta");
 const { sendSlack } = require("./_lib/slack");
+const { boardEvent, paymentCard, nlDate, euro } = require("./_lib/board");
 const { nativeSession, claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
 
 let stripe = null;
@@ -81,6 +82,7 @@ async function onPaidSession(s, ph, session) {
     // GoHighLevel: contact als betaald markeren (of aanmaken), zodat de juiste opvolging start.
     first ? sendToGhl("payment", ghlPaymentPayload(session, "stripe_webhook")) : null,
     first ? sendSlack(slackPaymentText(session)) : null,
+    first ? boardEvent(paymentCard(session)) : null,
     // Meta: zelfde event_id als bedankt.html en /api/verify-payment -> één aankoop.
     sendMetaEvent({
       eventName: "Purchase",
@@ -138,6 +140,9 @@ async function handle(s, ph, event) {
       await sendSlack(afterTrial
         ? `:tada: *Doorbetaald na de proef:* ${who} betaalt nu €${amount.toFixed(2).replace(".", ",")} per maand. <https://dashboard.stripe.com/customers/${o.customer}|Stripe>`
         : `:repeat: *Maandbetaling ontvangen:* ${who}, €${amount.toFixed(2).replace(".", ",")}. <https://dashboard.stripe.com/customers/${o.customer}|Stripe>`);
+      if (sub) await boardEvent(afterTrial
+        ? { event: "doorbetaald", key: sub.id, list: "door", comment: `✅ Doorbetaald na de proef: ${euro(amount)} per maand (incl. btw).` }
+        : { event: "maandbetaling", key: sub.id, comment: `🔁 Maandbetaling ontvangen: ${euro(amount)}.` });
       if (afterTrial) {
         await sendMetaEvent({
           eventName: "Subscribe",
@@ -151,6 +156,7 @@ async function handle(s, ph, event) {
 
     case "invoice.payment_failed": {
       const sub = await subscriptionFor(s, o);
+      if (sub) await boardEvent({ event: "betaling_mislukt", key: sub.id, label: "mislukt", comment: `⚠️ Betaling van ${euro((o.amount_due || 0) / 100)} mislukt (poging ${o.attempt_count || 1}). Neem contact op met de klant.` });
       await sendSlack(`:warning: *Betaling mislukt:* ${o.customer_name || o.customer_email || "klant"}${o.customer_phone ? " (" + localPhone(o.customer_phone) + ")" : ""}, €${((o.amount_due || 0) / 100).toFixed(2).replace(".", ",")} (poging ${o.attempt_count || 1}). Even contact opnemen. <https://dashboard.stripe.com/customers/${o.customer}|Stripe>`);
       if (ph) ph.capture({
         distinctId: distinctFor(sub, o.customer || o.id),
@@ -162,6 +168,8 @@ async function handle(s, ph, event) {
     }
 
     case "customer.subscription.trial_will_end":
+      await boardEvent({ event: "proef_bijna_voorbij", key: o.id, list: "bijna",
+        comment: `⏰ De proef eindigt op ${o.trial_end ? nlDate(o.trial_end * 1000) : "binnenkort"}. Bel de klant voor het evaluatiegesprek: resultaten doornemen en doorgaan voor €190 per maand?` });
       if (ph) ph.capture({ distinctId: distinctFor(o, o.customer), event: "trial_ending", uuid: stableUuid(event.id), properties: Object.assign({ trial_end: o.trial_end ? new Date(o.trial_end * 1000).toISOString() : null }, subProps(o), base) });
       return;
 
@@ -170,6 +178,8 @@ async function handle(s, ph, event) {
       // Opzegging aangevraagd (stopt aan het eind van de proef of de maand).
       if (o.cancel_at_period_end && prev.cancel_at_period_end === false) {
         const end = o.cancel_at || o.current_period_end || o.trial_end || 0;
+        await boardEvent({ event: "opzegging", key: o.id, label: "opzeg",
+          comment: `🚫 Opzegging aangevraagd${o.status === "trialing" ? " tijdens de proef" : ""}${end ? `, stopt op ${nlDate(end * 1000)}` : ""}. Even bellen: waarom, en is er nog iets te redden?` });
         await sendSlack(`:no_entry_sign: *Opzegging aangevraagd*${o.status === "trialing" ? " tijdens de proef" : ""}${end ? `, stopt op ${new Date(end * 1000).toLocaleDateString("nl-NL", { timeZone: "Europe/Amsterdam" })}` : ""}. <https://dashboard.stripe.com/customers/${o.customer}|Stripe>`);
       }
       if (o.cancel_at_period_end && prev.cancel_at_period_end === false && ph) {
@@ -179,6 +189,7 @@ async function handle(s, ph, event) {
     }
 
     case "customer.subscription.deleted":
+      await boardEvent({ event: "gestopt", key: o.id, list: "gestopt", comment: "❌ Abonnement gestopt." });
       if (ph) ph.capture({
         distinctId: distinctFor(o, o.customer),
         event: "subscription_cancelled",
