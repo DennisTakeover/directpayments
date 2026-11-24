@@ -22,14 +22,7 @@ const Stripe = require("stripe");
 // GET ?check=1 maakt van beide varianten een proef-sessie, leest het bedrag en
 // laat hem direct verlopen. Alleen op previews, of met header x-test-secret.
 
-const PAYMENT_LINK_URL =
-  process.env.STRIPE_PAYMENT_LINK_URL || "https://buy.stripe.com/14A9AVd2t5yQ8OK1uPb7y08";
-
-const TEST_CENTS = 4900;
-const MONTH_CENTS = 19000;
-const TRIAL_DAYS = 14;
-const TEST_NAME = "PromoView – 14 dagen testen";
-const TEST_DESC = "Het groeisysteem 14 dagen, plus gratis profielcheck en bio- en highlightoptimalisatie";
+const { TEST_CENTS, MONTH_CENTS, TRIAL_DAYS, TEST_NAME, TEST_DESC, getLinkSettings, findOrCreatePrice, resetCache } = require("./_lib/offer");
 
 const PLANS = {
   doorlopend: {
@@ -49,24 +42,6 @@ function getStripe() {
   return stripe;
 }
 
-// Instellingen + maandprijs van de €190-Payment Link, 10 minuten per warme functie bewaard.
-let linkCache = null;
-async function getLinkSettings(s) {
-  if (linkCache && Date.now() - linkCache.at < 10 * 60 * 1000) return linkCache.value;
-  let link = null;
-  for await (const pl of s.paymentLinks.list({ limit: 100 })) {
-    if (pl.url === PAYMENT_LINK_URL) { link = pl; break; }
-  }
-  let monthly = null;
-  if (link) {
-    const items = await s.paymentLinks.listLineItems(link.id, { limit: 20 });
-    const li = items.data.find((x) => x.price && x.price.recurring && x.price.recurring.interval === "month");
-    if (li) monthly = li.price;
-  }
-  const value = { link, monthly };
-  linkCache = { at: Date.now(), value };
-  return value;
-}
 
 const clean = (v, max) => (v == null ? "" : String(v).trim().slice(0, max || 200));
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -191,7 +166,7 @@ async function check(req, res, s) {
   if (!s) return res.status(200).json({ ok: false, error: "stripe_not_configured" });
 
   const out = { ok: true, plans: {} };
-  linkCache = null;
+  resetCache();
   for (const plan of Object.keys(PLANS)) {
     try {
       const { session, settings, minimal } = await createSession(
@@ -253,11 +228,6 @@ async function webhookStatus(s) {
 // als de landingspagina; aankopen krijgen lp_variant "betaallink" zodat ze de A/B-test
 // niet vertroebelen. Bestaat de link al, dan wordt hij hergebruikt.
 const LINK_BASE = "https://landing.promo-view.io";
-async function findOrCreatePrice(s, lookupKey, params) {
-  const found = await s.prices.list({ lookup_keys: [lookupKey], active: true, limit: 1 });
-  if (found.data[0]) return found.data[0];
-  return s.prices.create(Object.assign({ lookup_key: lookupKey }, params));
-}
 async function createLinks(req, res, s) {
   const allowed =
     process.env.VERCEL_ENV !== "production" ||
@@ -266,7 +236,7 @@ async function createLinks(req, res, s) {
   if (!s) return res.status(200).json({ ok: false, error: "stripe_not_configured" });
   const out = { ok: true, links: {} };
   try {
-    linkCache = null;
+    resetCache();
     const settings = await getLinkSettings(s);
     const link = settings.link;
     const tax = !!(link && link.automatic_tax && link.automatic_tax.enabled);

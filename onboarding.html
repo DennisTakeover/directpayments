@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onboarding | PromoView</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF8FB;--card:#FFFFFF;--pink:#DE2F55;--ink:#14121A;--dim:#585161;--mute:#807889;--line:#E5E0EA;--field:#D9D3DF;--green:#15A34A;--soft:#FFF1F4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.55;min-height:100vh;padding:24px 16px 48px;
+  background-image:radial-gradient(ellipse 60% 50% at 50% 110%,rgba(194,43,175,.12),transparent 65%)}
+.wrap{max-width:560px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin:0 2px 14px;font-size:13.5px;color:var(--dim);font-weight:600}
+.top b{color:var(--ink);font-weight:800;letter-spacing:-.01em;font-size:16px}
+.bar{height:6px;border-radius:99px;background:#EFEAF2;overflow:hidden;margin:0 0 18px}
+.bar i{display:block;height:100%;width:0;background:var(--pink);border-radius:99px;transition:width .3s ease}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 24px;box-shadow:0 1px 3px rgba(26,22,32,.05)}
+h1{font-size:clamp(22px,5vw,28px);line-height:1.2;letter-spacing:-.02em;margin-bottom:8px}
+.lead{color:var(--dim);margin-bottom:20px;font-size:15px}
+.step[hidden]{display:none}
+.fld{margin:0 0 16px}
+.fld>label,.fld>.lbl{display:block;font-weight:700;font-size:14.5px;margin:0 0 6px}
+.fld>label small,.fld>.lbl small{font-weight:500;color:var(--dim)}
+.hint{display:block;font-size:13px;color:var(--dim);margin:-2px 0 8px;line-height:1.45}
+input[type=text],input[type=email],input[type=tel],textarea{width:100%;font:inherit;font-size:16px;padding:12px 13px;border:1.5px solid var(--field);border-radius:10px;background:#fff;color:var(--ink)}
+textarea{min-height:92px;resize:vertical}
+input:focus,textarea:focus{outline:none;border-color:var(--pink);box-shadow:0 0 0 3px rgba(222,47,85,.15)}
+.at{display:flex;align-items:center;border:1.5px solid var(--field);border-radius:10px;background:#fff}
+.at span{padding-left:12px;color:var(--mute);font-weight:700}
+.at input{border:0;padding-left:4px}.at input:focus{box-shadow:none}
+.at:focus-within{border-color:var(--pink);box-shadow:0 0 0 3px rgba(222,47,85,.15)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{font:inherit;font-size:14.5px;font-weight:700;padding:10px 14px;border-radius:10px;border:1.5px solid var(--field);background:#fff;color:var(--ink);cursor:pointer}
+.chips button.on{border-color:var(--pink);background:var(--soft)}
+.grid6{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:420px){.grid6{grid-template-columns:1fr}}
+.err{display:none;color:#9b1c3a;font-size:13px;margin-top:6px}
+.fld.bad .err{display:block}
+.fld.bad input,.fld.bad textarea,.fld.bad .at,.fld.bad .chips button{border-color:#D23B5C}
+.nav{display:flex;gap:10px;margin-top:22px}
+.btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--pink);color:#fff;border:0;border-radius:12px;font:inherit;font-weight:800;font-size:17px;padding:15px 20px;cursor:pointer;text-decoration:none}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn:hover{box-shadow:0 8px 28px rgba(222,47,85,.28)}
+.btn.ghost{flex:0 0 auto;background:#fff;color:var(--ink);border:1.5px solid var(--field)}
+.btn.ghost:hover{box-shadow:none}
+.note{font-size:13px;color:var(--dim);margin-top:14px;text-align:center}
+.note a{color:var(--dim)}
+.formerr{display:none;margin-top:12px;padding:10px 12px;border-radius:10px;background:#FFF1F4;color:#9b1c3a;font-size:14px}
+.done{text-align:center}
+.check{width:64px;height:64px;border-radius:50%;background:rgba(21,163,74,.1);border:1px solid rgba(21,163,74,.4);display:grid;place-items:center;margin:0 auto 18px;color:var(--green);font-size:30px;font-weight:800}
+.next{text-align:left;margin:22px 0 4px;border-top:1px solid var(--line);padding-top:16px}
+.next div{display:flex;gap:12px;padding:6px 0;font-size:15px}
+.next b{color:var(--pink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><b>PromoView</b><span id="cnt">Stap 1 van 4 · ongeveer 3 minuten</span></div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="card">
+  <form id="f" novalidate>
+
+    <!-- Alleen zonder gekoppelde betaling: contactgegevens -->
+    <section class="step" data-s="contact" hidden>
+      <h1>Even kennismaken</h1>
+      <p class="lead">Met wie hebben we het genoegen? Hierop houden we je via WhatsApp op de hoogte.</p>
+      <div class="fld" data-f="naam"><label for="naam">Voor- en achternaam</label><input type="text" id="naam" autocomplete="name"><small class="err">Vul je naam in.</small></div>
+      <div class="fld" data-f="email"><label for="email">E-mailadres</label><input type="email" id="email" autocomplete="email" inputmode="email"><small class="err">Vul een geldig e-mailadres in.</small></div>
+      <div class="fld" data-f="telefoon"><label for="telefoon">WhatsApp-nummer</label><input type="tel" id="telefoon" autocomplete="tel" inputmode="tel" placeholder="06 12345678"><small class="err">Vul een geldig nummer in, bijvoorbeeld 06 12345678.</small></div>
+    </section>
+
+    <section class="step" data-s="bedrijf" hidden>
+      <h1 id="hi">Vertel ons over je bedrijf</h1>
+      <p class="lead">Hiermee stellen we het systeem in op jouw bedrijf. Het duurt ongeveer 3 minuten.</p>
+      <div class="fld" data-f="insta"><label for="insta">Instagram-gebruikersnaam</label><div class="at"><span>@</span><input type="text" id="insta" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="jouwbedrijf"></div><small class="err">Vul je Instagram-naam in, zonder spaties.</small></div>
+      <div class="fld" data-f="bedrijf"><label for="bedrijf">Wat doet je bedrijf?</label><span class="hint">Wat verkoop je, aan wie, en wat maakt je anders? Twee of drie zinnen is genoeg.</span><textarea id="bedrijf" placeholder="Bijv. Kapsalon in Utrecht, gespecialiseerd in krullen. Vooral vrouwen tussen 25 en 45 die een natuurlijke look willen."></textarea><small class="err">Vertel kort wat je bedrijf doet.</small></div>
+      <div class="fld" data-f="product_dienst"><span class="lbl">Verkoop je een product of een dienst?</span><div class="chips" data-one="product_dienst"><button type="button" data-v="Product">Product</button><button type="button" data-v="Dienst">Dienst</button><button type="button" data-v="Beide">Allebei</button></div><small class="err">Maak een keuze.</small></div>
+    </section>
+
+    <section class="step" data-s="klant" hidden>
+      <h1>Wie is je ideale klant?</h1>
+      <p class="lead">Precies deze mensen gaan we op Instagram voor je bereiken.</p>
+      <div class="fld" data-f="geslacht"><span class="lbl">Geslacht</span><div class="chips" data-one="geslacht"><button type="button" data-v="Vrouw">Vooral vrouwen</button><button type="button" data-v="Man">Vooral mannen</button><button type="button" data-v="Beide">Allebei</button></div><small class="err">Maak een keuze.</small></div>
+      <div class="fld" data-f="leeftijd"><span class="lbl">Leeftijd <small>(meerdere mogelijk)</small></span><div class="chips" data-many="leeftijd"><button type="button" data-v="18 - 25">18 tot 25</button><button type="button" data-v="25 - 35">25 tot 35</button><button type="button" data-v="35 - 55">35 tot 55</button><button type="button" data-v="55+">55+</button></div><small class="err">Kies minstens één leeftijdsgroep.</small></div>
+      <div class="fld" data-f="locatie"><label for="locatie">Waar wonen je klanten?</label><input type="text" id="locatie" placeholder="Bijv. Utrecht en omgeving, of heel Nederland"><small class="err">Vul een stad, regio of land in.</small></div>
+      <div class="fld" data-f="interesses"><label for="interesses">Wat zijn hun interesses?</label><input type="text" id="interesses" placeholder="Bijv. fitness, gezond eten, interieur"><small class="err">Noem een paar interesses.</small></div>
+    </section>
+
+    <section class="step" data-s="profielen" hidden>
+      <h1>Welke accounts lijken op jou?</h1>
+      <p class="lead">Noem zes Instagram-accounts waarvan de volgers ook jouw klant kunnen zijn: concurrenten, collega's in een andere stad of accounts die jouw doelgroep volgt. Minimaal drie.</p>
+      <div class="fld" data-f="profielen"><div class="grid6">
+        <div class="at"><span>@</span><input type="text" class="pr" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="account 1"></div>
+        <div class="at"><span>@</span><input type="text" class="pr" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="account 2"></div>
+        <div class="at"><span>@</span><input type="text" class="pr" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="account 3"></div>
+        <div class="at"><span>@</span><input type="text" class="pr" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="account 4"></div>
+        <div class="at"><span>@</span><input type="text" class="pr" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="account 5"></div>
+        <div class="at"><span>@</span><input type="text" class="pr" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="account 6"></div>
+      </div><small class="err">Vul minimaal drie accounts in.</small></div>
+    </section>
+
+    <section class="step" data-s="laatste" hidden>
+      <h1>Laatste vragen</h1>
+      <p class="lead">Dan kunnen we aan de slag.</p>
+      <div class="fld" data-f="twee_fa"><span class="lbl">Staat tweestapsverificatie (2FA) aan op je Instagram?</span><span class="hint">Geen idee? Kies “weet ik niet”, dan helpen we je via WhatsApp.</span><div class="chips" data-one="twee_fa"><button type="button" data-v="Ja">Ja</button><button type="button" data-v="Nee">Nee</button><button type="button" data-v="Weet ik niet">Weet ik niet</button></div><small class="err">Maak een keuze.</small></div>
+      <div class="fld" data-f="welkomstbericht"><label for="welkomstbericht">Welkomstbericht voor nieuwe volgers <small>(optioneel)</small></label><span class="hint">Een kort DM-bericht dat elke nieuwe volger krijgt. Leeg laten mag: dan schrijven wij er een voor je.</span><textarea id="welkomstbericht" placeholder="Bijv. Leuk dat je ons volgt! Wil je 10% korting op je eerste behandeling? Stuur ons een berichtje."></textarea></div>
+    </section>
+
+    <div class="nav" id="nav"><button type="button" class="btn ghost" id="back" hidden>←</button><button type="submit" class="btn" id="next">Volgende →</button></div>
+    <p class="formerr" id="formerr" role="alert"></p>
+  </form>
+
+  <section class="done" id="done" hidden>
+    <div class="check">✓</div>
+    <h1 id="doneH">Top, we gaan voor je aan de slag!</h1>
+    <p class="lead">Je onboarding is binnen. Binnen 48 uur staat je systeem live.</p>
+    <div class="next">
+      <div><b>1</b><span>We nemen je gegevens door en maken je profielcheck en bio-optimalisatie.</span></div>
+      <div><b>2</b><span>We sturen je via WhatsApp hoe je ons veilig toegang geeft tot je account.</span></div>
+      <div><b>3</b><span>Binnen 48 uur is het systeem live en jij gaat gewoon weer ondernemen.</span></div>
+    </div>
+  </section>
+  </div>
+  <p class="note">Vragen? <a href="https://wa.me/31685888134" target="_blank" rel="noopener">Stuur ons een WhatsApp</a> of mail <a href="mailto:info@promo-view.nl">info@promo-view.nl</a></p>
+</div>
+<script>
+var CONFIG = { POSTHOG_KEY: "phc_kSvVeBDoVN4rSTWzSk48YbYS29qPRQkBrDBzZAzUDQvv", POSTHOG_HOST: "https://eu.i.posthog.com", META_PIXEL_ID: "1766223344686526", PAGE_VERSION: "onboarding-v1" };
+!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once unregister identify alias set_config reset opt_in_capturing opt_out_capturing get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+posthog.init(CONFIG.POSTHOG_KEY,{api_host:CONFIG.POSTHOG_HOST,person_profiles:"identified_only",capture_pageview:true});
+posthog.register({page_version:CONFIG.PAGE_VERSION});
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+fbq("init",CONFIG.META_PIXEL_ID);fbq("track","PageView");
+function track(e,p){try{posthog.capture(e,p||{})}catch(_){}}
+
+(function(){
+var $=function(id){return document.getElementById(id)};
+var q=new URLSearchParams(location.search),REF=q.get("ref")||q.get("sub")||q.get("session_id")||"";
+var LEAD={};try{LEAD=JSON.parse(localStorage.getItem("pv_lead"))||{}}catch(_){}
+if(!REF&&LEAD.sub)REF=LEAD.sub;
+var known=false,steps=[],cur=0,busy=false,started=Date.now();
+var pick={product_dienst:"",geslacht:"",twee_fa:"",leeftijd:[]};
+try{if(LEAD.lead_id)posthog.identify(LEAD.lead_id)}catch(_){}
+
+function setSteps(){steps=[].slice.call(document.querySelectorAll(".step")).filter(function(s){return known?s.dataset.s!=="contact":true});show(0)}
+function show(i){cur=i;steps.forEach(function(s,n){s.hidden=n!==i});
+  $("bar").style.width=Math.round(i/steps.length*100)+"%";
+  $("cnt").textContent="Stap "+(i+1)+" van "+steps.length+(i===0?" · ongeveer 3 minuten":"");
+  $("back").hidden=i===0;$("next").textContent=i===steps.length-1?"Verstuur en start →":"Volgende →";
+  $("formerr").style.display="none";
+  track("onboarding_step",{step:i+1,naam:steps[i].dataset.s,gekoppeld:known});
+  window.scrollTo({top:0,behavior:"smooth"})}
+
+[].forEach.call(document.querySelectorAll(".chips"),function(c){
+  var one=c.dataset.one,many=c.dataset.many;
+  [].forEach.call(c.querySelectorAll("button"),function(b){b.addEventListener("click",function(){
+    if(one){pick[one]=b.dataset.v;[].forEach.call(c.querySelectorAll("button"),function(x){x.classList.toggle("on",x===b)})}
+    else{var a=pick[many],k=a.indexOf(b.dataset.v);if(k<0)a.push(b.dataset.v);else a.splice(k,1);b.classList.toggle("on",k<0)}
+    var f=c.closest(".fld");if(f)f.classList.remove("bad")})})});
+[].forEach.call(document.querySelectorAll("input,textarea"),function(el){el.addEventListener("input",function(){var f=el.closest(".fld");if(f)f.classList.remove("bad")})});
+
+function h(v){v=String(v||"").trim();var m=v.match(/instagram\.com\/([^\/?#\s]+)/i);if(m)v=m[1];return v.replace(/^@+/,"").replace(/\/+$/,"")}
+var okH=function(v){return/^[A-Za-z0-9._]{1,30}$/.test(v)};
+function profielen(){return[].map.call(document.querySelectorAll(".pr"),function(i){return h(i.value)}).filter(function(v){return v})}
+function checks(name){var bad={};
+  if(name==="contact"){if($("naam").value.trim().length<2)bad.naam=1;if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test($("email").value.trim()))bad.email=1;
+    if(!/^(\+\d{8,15}|00\d{8,15}|0[1-9]\d{8})$/.test($("telefoon").value.replace(/[\s().-]/g,"")))bad.telefoon=1}
+  if(name==="bedrijf"){if(!okH(h($("insta").value)))bad.insta=1;if($("bedrijf").value.trim().length<5)bad.bedrijf=1;if(!pick.product_dienst)bad.product_dienst=1}
+  if(name==="klant"){if(!pick.geslacht)bad.geslacht=1;if(!pick.leeftijd.length)bad.leeftijd=1;if($("locatie").value.trim().length<2)bad.locatie=1;if($("interesses").value.trim().length<2)bad.interesses=1}
+  if(name==="profielen"){var p=profielen();if(p.length<3||p.some(function(x){return!okH(x)}))bad.profielen=1}
+  if(name==="laatste"){if(!pick.twee_fa)bad.twee_fa=1}
+  Object.keys(bad).forEach(function(k){var f=document.querySelector('.fld[data-f="'+k+'"]');if(f)f.classList.add("bad")});
+  return Object.keys(bad)}
+
+$("back").addEventListener("click",function(){if(cur>0)show(cur-1)});
+$("f").addEventListener("submit",async function(ev){ev.preventDefault();if(busy)return;
+  var name=steps[cur].dataset.s,bad=checks(name);
+  if(bad.length){track("onboarding_invalid",{step:name,velden:bad.join(",")});var el=document.querySelector(".fld.bad input,.fld.bad textarea,.fld.bad button");if(el&&el.focus)el.focus();return}
+  if(cur<steps.length-1){show(cur+1);return}
+  busy=true;var btn=$("next");btn.disabled=true;btn.textContent="Versturen…";
+  var body={ref:REF,insta:h($("insta").value),bedrijf:$("bedrijf").value,product_dienst:pick.product_dienst,geslacht:pick.geslacht,leeftijd:pick.leeftijd,
+    locatie:$("locatie").value,interesses:$("interesses").value,profielen:profielen(),twee_fa:pick.twee_fa,welkomstbericht:$("welkomstbericht").value,
+    naam:$("naam").value,email:$("email").value,telefoon:$("telefoon").value};
+  var d=null;try{var r=await fetch("/api/onboarding",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});d=await r.json()}catch(_){}
+  if(!d||!d.ok){busy=false;btn.disabled=false;btn.textContent="Verstuur en start →";
+    track("onboarding_error",{code:(d&&d.error)||"network",velden:d&&d.fields?d.fields.join(","):null});
+    var fe=$("formerr");fe.innerHTML='Versturen lukt even niet. Probeer het nog eens, of <a href="https://wa.me/31685888134" target="_blank" rel="noopener">stuur ons een WhatsApp</a>.';fe.style.display="block";return}
+  track("onboarding_submitted",{gekoppeld:known,duur_sec:Math.round((Date.now()-started)/1000),profielen:body.profielen.length});
+  try{fbq("track","CompleteRegistration",{content_name:"PromoView onboarding"},{eventID:"onb_"+(REF||LEAD.lead_id||Date.now())})}catch(_){}
+  $("f").hidden=true;$("done").hidden=false;$("bar").style.width="100%";$("cnt").textContent="Klaar";
+  if(d.voornaam)$("doneH").textContent="Top "+d.voornaam+", we gaan voor je aan de slag!";
+  window.scrollTo({top:0,behavior:"smooth"})});
+
+// Wat we al weten van de betaling: niet opnieuw vragen.
+(async function(){
+  if(LEAD.insta)$("insta").value=LEAD.insta;
+  if(REF){try{var r=await fetch("/api/onboarding?ref="+encodeURIComponent(REF)),d=await r.json();
+    if(d&&d.known){known=true;if(d.insta)$("insta").value=d.insta;if(d.voornaam)$("hi").textContent="Welkom "+d.voornaam+"! Vertel ons over je bedrijf";
+      if(d.niche&&!$("bedrijf").value)$("bedrijf").placeholder="Bijv. "+d.niche+" in jouw stad. Wat verkoop je, aan wie en wat maakt je anders?"}}catch(_){}}
+  track("onboarding_view",{gekoppeld:known,ref_type:REF?REF.slice(0,3):"geen"});
+  setSteps()})();
+})();
+</script>
+</body>
+</html>

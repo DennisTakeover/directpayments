@@ -47,6 +47,10 @@
     {
       "source": "/v8",
       "destination": "/v8.html"
+    },
+    {
+      "source": "/onboarding",
+      "destination": "/onboarding.html"
     }
   ]
 }

@@ -3,7 +3,7 @@ const { PostHog } = require("posthog-node");
 const { sendToGhl } = require("./_lib/ghl");
 const { sendMetaEvent } = require("./_lib/meta");
 const { sendSlack } = require("./_lib/slack");
-const { claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
+const { nativeSession, claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
 
 let stripe = null;
 function getStripe() {
@@ -114,7 +114,16 @@ async function handle(s, ph, event) {
       return;
 
     case "invoice.paid": {
-      // De eerste factuur (de €49 bij het afsluiten) telt al via checkout.session.completed.
+      // Eerste factuur van de eigen betaalstap (/api/pay): dit is de aankoop van €49.
+      if (o.billing_reason === "subscription_create" && o.amount_paid) {
+        const subId = (typeof o.subscription === "string" ? o.subscription : o.subscription && o.subscription.id) ||
+          (o.parent && o.parent.subscription_details && o.parent.subscription_details.subscription);
+        if (!subId) return;
+        const { paid, session } = await nativeSession(s, subId);
+        if (paid && session) return onPaidSession(s, ph, session);
+        return;
+      }
+      // Bij Stripe Checkout telt de eerste factuur al via checkout.session.completed.
       if (o.billing_reason !== "subscription_cycle" || !o.amount_paid) return;
       const sub = await subscriptionFor(s, o);
       const afterTrial = !!(sub && sub.trial_end && Math.abs((o.period_start || 0) - sub.trial_end) < 2 * 86400);

@@ -57,11 +57,11 @@ p{color:var(--text-dim);margin-bottom:10px}
 <div class="card">
   <div class="check">✓</div>
   <h1>Je betaling is gelukt. Welkom bij PromoView!</h1>
-  <p>Nog één stap en dan gaan wij voor je aan de slag: het onboarding-formulier. Duurt tien minuten, daarna is je systeem binnen 48 uur actief.</p>
-  <a class="btn btn-big" id="onboardBtn" href="https://form.typeform.com/to/kjy12kQE">Start de onboarding →</a>
-  <p class="btn-sub">Duurt ongeveer 10 minuten · daarna gaan wij voor je aan de slag</p>
+  <p>Nog één stap en dan gaan wij voor je aan de slag: de onboarding. Duurt drie minuten, daarna is je systeem binnen 48 uur actief.</p>
+  <a class="btn btn-big" id="onboardBtn" href="/onboarding">Start de onboarding →</a>
+  <p class="btn-sub">Duurt ongeveer 3 minuten · daarna gaan wij voor je aan de slag</p>
   <div class="steps">
-    <div><b>1</b><span>Vul het onboarding-formulier in: je niche, je regio en zes vergelijkbare accounts.</span></div>
+    <div><b>1</b><span>Vul de onboarding in: je bedrijf, je ideale klant en zes vergelijkbare accounts.</span></div>
     <div><b>2</b><span>We koppelen je Instagram-account veilig, inclusief 2FA-check.</span></div>
     <div><b>3</b><span>Binnen 48 uur is het systeem live en jij gaat gewoon weer ondernemen.</span></div>
   </div>
@@ -73,14 +73,19 @@ p{color:var(--text-dim);margin-bottom:10px}
    Blijft dit leeg, dan valt de knop automatisch terug op WhatsApp,
    zodat een klant die net betaald heeft nooit op een dood einde landt. */
 const CONFIG = {
-  ONBOARDING_URL: "https://form.typeform.com/to/kjy12kQE",
+  ONBOARDING_URL: "/onboarding",
   WHATSAPP: "https://wa.me/31685888134",
   META_PIXEL_ID: "1766223344686526",
   POSTHOG_KEY: "phc_kSvVeBDoVN4rSTWzSk48YbYS29qPRQkBrDBzZAzUDQvv",
   POSTHOG_HOST: "https://eu.i.posthog.com"
 };
 
-CONFIG.PAGE_VERSION = "bedankt-v2";
+CONFIG.PAGE_VERSION = "bedankt-v3";
+// Referentie van de betaling: abonnement (eigen betaalstap, ?sub=) of Checkout Session (?session_id=).
+var PV_Q = new URLSearchParams(location.search);
+var PV_REF = PV_Q.get("sub") || PV_Q.get("session_id") || "";
+// 3D Secure via een volledige doorverwijzing die mislukte: terug naar de betaalstap.
+if (PV_Q.get("redirect_status") === "failed") location.replace("/v7.html?checkout=geannuleerd");
 if(CONFIG.POSTHOG_KEY&&CONFIG.POSTHOG_KEY.indexOf("PLAATS_HIER")!==0){!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags on onFeatureFlags onSessionId identify setPersonProperties group resetGroups reset get_distinct_id get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init(CONFIG.POSTHOG_KEY,{api_host:CONFIG.POSTHOG_HOST,person_profiles:"identified_only",capture_pageview:!0,capture_pageleave:!0,autocapture:!0,enable_heatmaps:!0,capture_dead_clicks:!0,session_recording:{maskAllInputs:!0,maskTextSelector:"[data-ph-mask]"}});posthog.register({funnel_page:"bedankt",page_version:CONFIG.PAGE_VERSION});try{var _l=JSON.parse(localStorage.getItem("pv_lead")||"null");if(_l&&_l.lead_id)posthog.identify(_l.lead_id)}catch(e){}}
 
 
@@ -127,33 +132,34 @@ track("bedankt_page_viewed");
 // Vereist dat de Stripe Payment Link (Dashboard > Payment Links > bewerken >
 // "Na betaling") doorstuurt naar deze pagina met ?session_id={CHECKOUT_SESSION_ID}.
 (function () {
-  var sessionId = new URLSearchParams(location.search).get("session_id");
-  if (!sessionId) { track("purchase_unconfirmed", { reason: "missing_session_id" }); return; }
-  var fb = pvFbIds();
-  fetch("/api/verify-payment?session_id=" + encodeURIComponent(sessionId) + (fb.fbp ? "&fbp=" + encodeURIComponent(fb.fbp) : "") + (fb.fbc ? "&fbc=" + encodeURIComponent(fb.fbc) : ""))
+  var sessionId = PV_Q.get("session_id"), subId = PV_Q.get("sub");
+  if (!sessionId && !subId) { track("purchase_unconfirmed", { reason: "missing_session_id" }); return; }
+  var fb = pvFbIds(), tries = 0;
+  (function verify() {
+  tries++;
+  fetch("/api/verify-payment?" + (subId ? "sub=" + encodeURIComponent(subId) : "session_id=" + encodeURIComponent(sessionId)) + (fb.fbp ? "&fbp=" + encodeURIComponent(fb.fbp) : "") + (fb.fbc ? "&fbc=" + encodeURIComponent(fb.fbc) : ""))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d && d.ok && d.paid) {
         try { if (d.lead_id) posthog.identify(d.lead_id, { klant: true }); } catch (_) {}
         // purchase_completed komt van de server (ontdubbeld via de Stripe-id); de browser meldt alleen dat hij het zag.
-        try {
-          var hf = { email: d.email, naam: d.name, instagram: d.insta, sessie: d.stripe_session_id, plan: d.plan };
-          var parts = Object.keys(hf).filter(function (k) { return hf[k]; }).map(function (k) { return k + "=" + encodeURIComponent(hf[k]); });
-          if (parts.length && CONFIG.ONBOARDING_URL) document.getElementById("onboardBtn").href = CONFIG.ONBOARDING_URL + "#" + parts.join("&");
-        } catch (_) {}
+        try { var L = JSON.parse(localStorage.getItem("pv_lead") || "{}"); L.sub = subId || L.sub; L.insta = d.insta || L.insta; localStorage.setItem("pv_lead", JSON.stringify(L)); } catch (_) {}
         track("purchase_confirmed_browser", { amount_total: d.amount_total, currency: d.currency, lead_id: d.lead_id, plan: d.plan, lp_variant: d.lp_variant, stripe_session_id: d.stripe_session_id });
         // Zelfde eventID als de server (purchase_<session_id>): Meta telt dit als één aankoop.
-        try { fbq("track", "Purchase", { value: d.amount_total || 190, currency: String(d.currency || "eur").toUpperCase(), content_name: "PromoView Groeisysteem" }, { eventID: "purchase_" + sessionId }); } catch (_) {}
+        try { fbq("track", "Purchase", { value: d.amount_total || 190, currency: String(d.currency || "eur").toUpperCase(), content_name: "PromoView Groeisysteem" }, { eventID: "purchase_" + (d.stripe_session_id || sessionId || subId) }); } catch (_) {}
+      } else if (subId && tries < 6) {
+        setTimeout(verify, 2000);
       } else {
-        track("purchase_unconfirmed", { reason: "not_paid" });
+        track("purchase_unconfirmed", { reason: "not_paid", tries: tries });
       }
     })
     .catch(function () { track("purchase_unconfirmed", { reason: "verify_failed" }); });
+  })();
 })();
 
 var btn = document.getElementById("onboardBtn");
 if (CONFIG.ONBOARDING_URL) {
-  btn.href = CONFIG.ONBOARDING_URL;
+  btn.href = CONFIG.ONBOARDING_URL + (PV_REF ? "?ref=" + encodeURIComponent(PV_REF) : "");
 } else {
   btn.href = CONFIG.WHATSAPP + "?text=" + encodeURIComponent("Hoi! Ik heb net betaald voor het PromoView Groeisysteem en wil graag de onboarding starten.");
   btn.target = "_blank";

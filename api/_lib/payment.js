@@ -146,4 +146,32 @@ async function withLinkMetadata(s, session) {
   }
 }
 
-module.exports = { claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName };
+// Betaling via de eigen betaalstap (/api/pay): er is geen Checkout Session, maar een
+// abonnement met een eerste factuur. Dit maakt er hetzelfde soort object van, zodat
+// PostHog, GoHighLevel, Slack en Meta precies zo werken als bij Stripe Checkout.
+async function nativeSession(s, subId) {
+  const sub = await s.subscriptions.retrieve(String(subId), { expand: ["latest_invoice", "customer"] });
+  const md = sub.metadata || {};
+  if (md.native !== "1") return { sub, paid: false, session: null };
+  const inv = sub.latest_invoice && typeof sub.latest_invoice === "object" ? sub.latest_invoice : null;
+  const cust = sub.customer && typeof sub.customer === "object" ? sub.customer : {};
+  const paid = !!(inv && inv.status === "paid");
+  const paidAt = inv && inv.status_transitions && inv.status_transitions.paid_at;
+  const session = {
+    id: sub.id,
+    payment_status: paid ? "paid" : "unpaid",
+    amount_total: inv ? (paid ? inv.amount_paid : inv.amount_due) : null,
+    currency: (inv && inv.currency) || "eur",
+    customer: cust.id || (typeof sub.customer === "string" ? sub.customer : null),
+    subscription: sub.id,
+    client_reference_id: md.lead_id || null,
+    customer_email: cust.email || null,
+    customer_details: { name: cust.name || null, email: cust.email || null, phone: cust.phone || null },
+    custom_fields: md.insta ? [{ key: "instagram", text: { value: md.insta } }] : [],
+    metadata: md,
+    created: paidAt || sub.created,
+  };
+  return { sub, paid, session };
+}
+
+module.exports = { nativeSession, claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName };

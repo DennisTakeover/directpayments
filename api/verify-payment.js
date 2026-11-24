@@ -3,7 +3,7 @@ const { PostHog } = require("posthog-node");
 const { sendMetaEvent, clientIp } = require("./_lib/meta");
 const { sendToGhl } = require("./_lib/ghl");
 const { sendSlack } = require("./_lib/slack");
-const { claimOnce, slackPaymentText, withLinkMetadata, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
+const { nativeSession, claimOnce, slackPaymentText, withLinkMetadata, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
 
 let stripe = null;
 function getStripe() {
@@ -33,18 +33,25 @@ module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Cache-Control", "no-store");
   const sessionId = req.query && req.query.session_id;
-  if (!sessionId) return res.status(400).json({ ok: false, error: "missing_session_id" });
+  // ?sub=... komt van de eigen betaalstap (/api/pay): abonnement in plaats van Checkout Session.
+  const subId = req.query && req.query.sub;
+  if (!sessionId && !subId) return res.status(400).json({ ok: false, error: "missing_session_id" });
 
   const s = getStripe();
   if (!s) return res.status(500).json({ ok: false, error: "stripe_not_configured" });
 
   let session;
-  try {
-    session = await s.checkout.sessions.retrieve(String(sessionId));
-  } catch (e) {
-    return res.status(404).json({ ok: false, error: "session_not_found" });
+  if (subId) {
+    try { session = (await nativeSession(s, subId)).session; } catch (e) { session = null; }
+    if (!session) return res.status(404).json({ ok: false, error: "session_not_found" });
+  } else {
+    try {
+      session = await s.checkout.sessions.retrieve(String(sessionId));
+    } catch (e) {
+      return res.status(404).json({ ok: false, error: "session_not_found" });
+    }
+    session = await withLinkMetadata(s, session);
   }
-  session = await withLinkMetadata(s, session);
 
   // "paid" bij een losse betaling en bij de €49 + proefperiode van V7.
   const paid = session.payment_status === "paid";
