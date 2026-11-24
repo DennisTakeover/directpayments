@@ -91,5 +91,11 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/profielcheck-pdf.js": {
+      "includeFiles": "api/_fonts/**",
+      "maxDuration": 30
+    }
+  }
 }

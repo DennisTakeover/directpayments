@@ -6,6 +6,8 @@
   "dependencies": {
     "stripe": "^17.4.0",
     "posthog-node": "^4.3.1",
-    "@vercel/edge": "^1.2.1"
+    "@vercel/edge": "^1.2.1",
+    "pdf-lib": "^1.17.1",
+    "@pdf-lib/fontkit": "^1.1.1"
   }
 }
