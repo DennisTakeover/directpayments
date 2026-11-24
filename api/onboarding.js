@@ -2,6 +2,7 @@ const Stripe = require("stripe");
 const { PostHog } = require("posthog-node");
 const { sendSlack, ONBOARDING_CHANNEL } = require("./_lib/slack");
 const { boardEvent } = require("./_lib/board");
+const { sendProfielcheck } = require("./_lib/profielcheck");
 const { nativeSession, stableUuid, localPhone } = require("./_lib/payment");
 const { paySession } = require("./_lib/paypro");
 
@@ -245,6 +246,8 @@ module.exports = async (req, res) => {
   await Promise.all([
     board,
     sendSlack(lines.join("\n"), ONBOARDING_CHANNEL),
+    sendProfielcheck({ ref: k ? k.subId || k.ref : null, insta, naam: name, ...a, profielen, niche: md.niche, doel: md.doel })
+      .then((r) => { if (!r.ok && !r.skipped) console.error("[onboarding] profielcheck", r); }),
     k && k.subId && s && !k.paypro ? s.subscriptions.update(k.subId, { metadata: { onboarding_ingevuld: new Date().toISOString() } }).catch(() => null) : null,
   ]);
   if (ph) {

@@ -319,6 +319,18 @@ async function slackTest(req, res) {
     const second = await boardEvent({ event: "onboarding", key: card.key, list: "onboarding", label: "tfa", comment: "📝 TEST: onboarding ingevuld (kaart mag weg)." });
     return res.status(200).json({ ok: first.ok && second.ok, key: card.key, first, second });
   }
+  // ?slack_test=1&profielcheck=<instagram>: test van de AI-profielcheck (Make) op een echt profiel.
+  if (req.query.profielcheck) {
+    const { sendProfielcheck } = require("./_lib/profielcheck");
+    const insta = String(req.query.profielcheck).replace(/^@+/, "").toLowerCase();
+    if (!/^[a-z0-9._]{1,30}$/.test(insta)) return res.status(400).json({ ok: false, error: "ongeldige_instagram" });
+    return res.status(200).json(await sendProfielcheck({
+      test: true, insta, naam: "TEST",
+      bedrijf: String(req.query.bedrijf || "PromoView: Instagram-groei voor ondernemers in Nederland en België. Wij laten accounts groeien met echte, relevante volgers uit de doelgroep."),
+      product_dienst: "Dienst", geslacht: "Beide", leeftijd: "25 - 35, 35 - 45", locatie: "Nederland en België",
+      interesses: "ondernemen, marketing, social media, lokale bedrijven", profielen: [], niche: "Marketing", doel: "Meer klanten",
+    }));
+  }
   // ?slack_test=1&kanaal=onboarding: testbericht naar het onboardingkanaal.
   if (req.query.kanaal === "onboarding") {
     const { ONBOARDING_CHANNEL } = require("./_lib/slack");
