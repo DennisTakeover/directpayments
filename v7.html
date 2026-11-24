@@ -435,9 +435,10 @@ function saveLead(o){try{localStorage.setItem("pv_lead",JSON.stringify(Object.as
 function base(src){var b={};try{b=pvBaseProps()}catch(e){}var u=(typeof PV_UTM!=="undefined"&&PV_UTM)||{},a=(typeof quizAnswers!=="undefined"&&quizAnswers)||{};
   return{plan:CONFIG.PLAN,lead_id:P.id,niche:a.niche||"",doel:a.doel||"",leeftijd:a.leeftijd||"",source:src,lp_variant:b.lp_variant||CONFIG.LP,page_version:CONFIG.PAGE_VERSION,utm_source:u.utm_source||"",utm_campaign:u.utm_campaign||"",utm_content:u.utm_content||"",ad_id:u.ad_id||"",adset_id:u.adset_id||"",campaign_id:u.campaign_id||""}}
 function err(html){var e=$("pvPayErr2");if(!html){e.hidden=true;return}e.innerHTML=html;e.hidden=false}
-function fallback(reason){track("checkout_fallback",{plan:CONFIG.PLAN,reason:reason,checkout:"eigen_betaalstap"});
-  $("pvPeLoad").textContent="";err('Het betaalformulier laadt niet. <a href="#" id="pvToStripe">Betaal via de beveiligde pagina van Stripe →</a>');
-  var a=$("pvToStripe");if(a)a.addEventListener("click",function(ev){ev.preventDefault();goCheckout(null,"fallback")})}
+// Laadt het betaalformulier niet, dan gaat de knop naar de betaalpagina van Stripe (zelfde aanbod).
+function fallback(reason){if(P.fallback)return;P.fallback=true;track("checkout_fallback",{plan:CONFIG.PLAN,reason:reason,checkout:"eigen_betaalstap"});
+  $("pvPeLoad").textContent="Je rondt de betaling af op de beveiligde pagina van Stripe.";
+  var btn=$("pvPaySubmit");btn.disabled=false;btn.innerHTML="🔒 Verder naar betalen →"}
 function loadJs(){return new Promise(function(ok,no){if(window.Stripe)return ok();var x=document.createElement("script");x.src="https://js.stripe.com/v3/";x.onload=ok;x.onerror=no;document.head.appendChild(x)})}
 function init(){if(P.loading)return P.loading;
   P.loading=(async function(){
@@ -471,10 +472,11 @@ function validate(v){var ph=v.phone.replace(/[\s().-]/g,"");var r={name:v.name.l
   var first=null;Object.keys(r).forEach(function(k){bad(k,r[k]);if(r[k]&&!first)first=k});return first}
 ["pfNaam","pfEmail","pfTel","pfInsta"].forEach(function(id){$(id).addEventListener("input",function(){var f=this.closest(".pv-fld");if(f)f.classList.remove("bad")})});
 var MSG={invalid_name:["name"],invalid_email:["email"],invalid_phone:["phone"],invalid_insta:["insta"]};
-function done(btn){P.busy=false;btn.disabled=false;btn.innerHTML="🔒 Betaal €59,29 en start mijn test"}
+function done(btn){P.busy=false;btn.disabled=false;btn.innerHTML=P.fallback?"🔒 Verder naar betalen →":"🔒 Betaal €59,29 en start mijn test"}
 $("pvPayForm").addEventListener("submit",async function(ev){ev.preventDefault();if(P.busy)return;
   var btn=$("pvPaySubmit"),v=vals();err("");
   var f=validate(v);if(f){track("payment_form_invalid",{field:f});var el=document.querySelector('.pv-fld[data-f="'+f+'"] input');if(el)el.focus();return}
+  if(P.fallback){saveLead({name:v.name,email:v.email,phone:v.phone,insta:v.insta});goCheckout(btn,"fallback");return}
   if(!P.ready){err("Even geduld, het betaalformulier wordt nog geladen.");return}
   P.busy=true;btn.disabled=true;btn.textContent="Bezig met betalen…";
   saveLead({name:v.name,email:v.email,phone:v.phone,insta:v.insta});
