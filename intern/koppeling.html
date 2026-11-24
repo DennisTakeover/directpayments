@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Koppeling bekijken | PromoView intern</title>
+<style>
+:root{--bg:#FAF8FB;--card:#fff;--ink:#14121A;--dim:#585161;--line:#E5E0EA;--pink:#DE2F55}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 22px;max-width:440px;width:100%}
+h1{font-size:21px;margin-bottom:6px}
+p{color:var(--dim);font-size:14.5px;margin-bottom:14px}
+label{display:block;font-weight:700;font-size:14px;margin:0 0 6px}
+input{width:100%;font:inherit;padding:12px;border:1.5px solid #D9D3DF;border-radius:10px}
+button{font:inherit;font-weight:800;border:0;border-radius:10px;cursor:pointer}
+.go{width:100%;margin-top:12px;background:var(--pink);color:#fff;padding:13px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.row small{display:block;color:var(--dim);font-size:12.5px}
+.row code{font-size:16px;word-break:break-all}
+.row button{background:#F3EEF6;color:var(--ink);padding:8px 12px;flex:none}
+.err{color:#9b1c3a;font-size:14px;margin-top:10px;display:none}
+.note{font-size:12.5px;color:var(--dim);margin-top:12px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="card">
+  <section id="ask">
+    <h1>🔐 Koppeling bekijken</h1>
+    <p>Alleen voor het PromoView-team. Vul de teamcode in om de Instagram-gegevens te zien.</p>
+    <form id="f"><label for="code">Teamcode</label><input id="code" type="password" autocomplete="current-password"><button class="go" type="submit">Bekijken</button></form>
+    <p class="err" id="err"></p>
+  </section>
+  <section id="show" hidden>
+    <h1>Instagram-gegevens</h1>
+    <p id="when"></p>
+    <div class="row"><div><small>Gebruikersnaam</small><code id="u"></code></div><button data-c="u">Kopieer</button></div>
+    <div class="row"><div><small>Wachtwoord</small><code id="p"></code></div><button data-c="p">Kopieer</button></div>
+    <div class="row" id="crow"><div><small>Back-upcode (eenmalig te gebruiken)</small><code id="c"></code></div><button data-c="c">Kopieer</button></div>
+    <p class="note">Sluit deze pagina als je klaar bent. Deel deze gegevens niet in Slack, WhatsApp of e-mail.</p>
+  </section>
+</div>
+<script>
+(function(){
+  var token = location.hash.slice(1);
+  var $ = function(id){ return document.getElementById(id); };
+  if (!token) { $("err").textContent = "Deze link is onvolledig. Open hem opnieuw vanaf de Trello-kaart."; $("err").style.display = "block"; }
+  var saved = ""; try { saved = sessionStorage.getItem("pv_team_code") || ""; } catch (_) {}
+  async function go(code){
+    $("err").style.display = "none";
+    var r = await fetch("/api/koppeling?bekijk=1", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: token, code: code }) });
+    var d = null; try { d = await r.json(); } catch (_) {}
+    if (!d || !d.ok) {
+      var m = { verkeerde_code: "Verkeerde teamcode.", te_vaak: "Te vaak geprobeerd. Wacht een kwartier.", teamcode_niet_ingesteld: "De teamcode is nog niet ingesteld in Vercel.", ongeldige_link: "Deze link is ongeldig." };
+      $("err").textContent = m[d && d.error] || "Er ging iets mis."; $("err").style.display = "block";
+      try { sessionStorage.removeItem("pv_team_code"); } catch (_) {}
+      return;
+    }
+    try { sessionStorage.setItem("pv_team_code", code); } catch (_) {}
+    $("u").textContent = "@" + d.instagram; $("p").textContent = d.wachtwoord;
+    if (d.backup_code) $("c").textContent = d.backup_code; else $("crow").hidden = true;
+    $("when").textContent = d.ontvangen ? "Ontvangen op " + new Date(d.ontvangen).toLocaleString("nl-NL") : "";
+    $("ask").hidden = true; $("show").hidden = false;
+  }
+  $("f").addEventListener("submit", function(e){ e.preventDefault(); if (token) go($("code").value); });
+  [].forEach.call(document.querySelectorAll("[data-c]"), function(b){
+    b.addEventListener("click", function(){ var t = $(b.dataset.c).textContent.replace(/^@/, ""); navigator.clipboard && navigator.clipboard.writeText(t); b.textContent = "Gekopieerd"; setTimeout(function(){ b.textContent = "Kopieer"; }, 1500); });
+  });
+  if (token && saved) go(saved);
+})();
+</script>
+</body>
+</html>

@@ -51,6 +51,45 @@
     {
       "source": "/onboarding",
       "destination": "/onboarding.html"
+    },
+    {
+      "source": "/intern/koppeling",
+      "destination": "/intern/koppeling.html"
+    },
+    {
+      "source": "/koppeling",
+      "destination": "/koppeling.html"
+    },
+    {
+      "source": "/onboardingv2",
+      "destination": "/koppeling.html"
+    },
+    {
+      "source": "/onboarding-v2",
+      "destination": "/koppeling.html"
+    },
+    {
+      "source": "/onboardingV2",
+      "destination": "/koppeling.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/intern/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
     }
   ]
 }

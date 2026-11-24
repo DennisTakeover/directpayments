@@ -104,9 +104,8 @@ input:focus,textarea:focus{outline:none;border-color:var(--pink);box-shadow:0 0 
     </section>
 
     <section class="step" data-s="laatste" hidden>
-      <h1>Laatste vragen</h1>
-      <p class="lead">Dan kunnen we aan de slag.</p>
-      <div class="fld" data-f="twee_fa"><span class="lbl">Staat tweestapsverificatie (2FA) aan op je Instagram?</span><span class="hint">Geen idee? Kies “weet ik niet”, dan helpen we je via WhatsApp.</span><div class="chips" data-one="twee_fa"><button type="button" data-v="Ja">Ja</button><button type="button" data-v="Nee">Nee</button><button type="button" data-v="Weet ik niet">Weet ik niet</button></div><small class="err">Maak een keuze.</small></div>
+      <h1>Nog één ding</h1>
+      <p class="lead">Daarna koppel je je Instagram-account en kunnen we aan de slag.</p>
       <div class="fld" data-f="welkomstbericht"><label for="welkomstbericht">Welkomstbericht voor nieuwe volgers <small>(optioneel)</small></label><span class="hint">Een kort DM-bericht dat elke nieuwe volger krijgt. Leeg laten mag: dan schrijven wij er een voor je.</span><textarea id="welkomstbericht" placeholder="Bijv. Leuk dat je ons volgt! Wil je 10% korting op je eerste behandeling? Stuur ons een berichtje."></textarea></div>
     </section>
 
@@ -116,13 +115,10 @@ input:focus,textarea:focus{outline:none;border-color:var(--pink);box-shadow:0 0 
 
   <section class="done" id="done" hidden>
     <div class="check">✓</div>
-    <h1 id="doneH">Top, we gaan voor je aan de slag!</h1>
-    <p class="lead">Je onboarding is binnen. Binnen 48 uur staat je systeem live.</p>
-    <div class="next">
-      <div><b>1</b><span>We nemen je gegevens door en maken je profielcheck en bio-optimalisatie.</span></div>
-      <div><b>2</b><span>We sturen je via WhatsApp hoe je ons veilig toegang geeft tot je account.</span></div>
-      <div><b>3</b><span>Binnen 48 uur is het systeem live en jij gaat gewoon weer ondernemen.</span></div>
-    </div>
+    <h1 id="doneH">Top, je onboarding is binnen!</h1>
+    <p class="lead">Nog één laatste stap: koppel je Instagram-account, dan staat je systeem binnen 48 uur live.</p>
+    <a class="btn" id="toKoppel" href="/koppeling">Koppel je Instagram-account →</a>
+    <p class="hint" style="text-align:center;margin-top:10px">Duurt 1 minuut · veilig en versleuteld</p>
   </section>
   </div>
   <p class="note">Vragen? <a href="https://wa.me/31685888134" target="_blank" rel="noopener">Stuur ons een WhatsApp</a> of mail <a href="mailto:info@promo-view.nl">info@promo-view.nl</a></p>
@@ -171,7 +167,6 @@ function checks(name){var bad={};
   if(name==="bedrijf"){if(!okH(h($("insta").value)))bad.insta=1;if($("bedrijf").value.trim().length<5)bad.bedrijf=1;if(!pick.product_dienst)bad.product_dienst=1}
   if(name==="klant"){if(!pick.geslacht)bad.geslacht=1;if(!pick.leeftijd.length)bad.leeftijd=1;if($("locatie").value.trim().length<2)bad.locatie=1;if($("interesses").value.trim().length<2)bad.interesses=1}
   if(name==="profielen"){var p=profielen();if(p.length<3||p.some(function(x){return!okH(x)}))bad.profielen=1}
-  if(name==="laatste"){if(!pick.twee_fa)bad.twee_fa=1}
   Object.keys(bad).forEach(function(k){var f=document.querySelector('.fld[data-f="'+k+'"]');if(f)f.classList.add("bad")});
   return Object.keys(bad)}
 
@@ -191,7 +186,9 @@ $("f").addEventListener("submit",async function(ev){ev.preventDefault();if(busy)
   track("onboarding_submitted",{gekoppeld:known,duur_sec:Math.round((Date.now()-started)/1000),profielen:body.profielen.length});
   try{fbq("track","CompleteRegistration",{content_name:"PromoView onboarding"},{eventID:"onb_"+(REF||LEAD.lead_id||Date.now())})}catch(_){}
   $("f").hidden=true;$("done").hidden=false;$("bar").style.width="100%";$("cnt").textContent="Klaar";
-  if(d.voornaam)$("doneH").textContent="Top "+d.voornaam+", we gaan voor je aan de slag!";
+  if(d.voornaam)$("doneH").textContent="Top "+d.voornaam+", je onboarding is binnen!";
+  $("toKoppel").href="/koppeling"+(REF?"?ref="+encodeURIComponent(REF):"");
+  $("toKoppel").addEventListener("click",function(){track("koppeling_click",{bron:"onboarding"})});
   window.scrollTo({top:0,behavior:"smooth"})});
 
 // Wat we al weten van de betaling: niet opnieuw vragen.

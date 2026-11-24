@@ -1,6 +1,6 @@
 const Stripe = require("stripe");
 const { PostHog } = require("posthog-node");
-const { sendSlack } = require("./_lib/slack");
+const { sendSlack, ONBOARDING_CHANNEL } = require("./_lib/slack");
 const { boardEvent } = require("./_lib/board");
 const { nativeSession, stableUuid, localPhone } = require("./_lib/payment");
 const { paySession } = require("./_lib/paypro");
@@ -213,7 +213,7 @@ module.exports = async (req, res) => {
     `*Bedrijf:* ${a.bedrijf.slice(0, 200)}${a.bedrijf.length > 200 ? "…" : ""}`,
     `*Doelgroep:* ${a.geslacht}, ${a.leeftijd}, ${a.locatie}. Interesses: ${a.interesses.slice(0, 150)}`,
     `*Accounts:* ${profielen.map((p) => "@" + p).join(", ")}`,
-    `*2FA:* ${a.twee_fa || "-"}${make.ok ? "" : "   :warning: _niet doorgestuurd naar Make, handmatig verwerken_"}`,
+    `_Volgende stap: de klant koppelt zijn Instagram-account._${make.ok ? "" : "   :warning: _niet doorgestuurd naar Make, handmatig verwerken_"}`,
   ];
 
   // Trello: kaart naar "Onboarding binnen", antwoorden als opmerking. Zonder gekoppelde
@@ -224,7 +224,7 @@ module.exports = async (req, res) => {
     naam: name,
     insta,
     list: "onboarding",
-    label: a.twee_fa === "Ja" ? undefined : "tfa",
+    label: a.twee_fa === "Weet ik niet" ? "tfa" : undefined,
     card_name: `@${insta} · ${name || "onbekend"}`,
     card_desc: [`**Naam:** ${name || "onbekend"}`, `**Telefoon:** ${localPhone(phone)}`, `**E-mail:** ${email || "onbekend"}`,
       `**Instagram:** https://instagram.com/${insta}`, "", k ? `Ref: ${k.subId || k.ref}` : "_Onboarding zonder gekoppelde betaling: controleer of deze klant betaald heeft._"].join("\n"),
@@ -236,7 +236,6 @@ module.exports = async (req, res) => {
       `**Locatie:** ${a.locatie}`,
       `**Interesses:** ${a.interesses}`,
       `**Vergelijkbare accounts:** ${profielen.map((p) => "@" + p).join(", ")}`,
-      `**2FA aan:** ${a.twee_fa || "-"}`,
       a.welkomstbericht ? `**Welkomstbericht:** ${a.welkomstbericht}` : "**Welkomstbericht:** schrijven wij",
     ].join("\n"),
   });
@@ -245,7 +244,7 @@ module.exports = async (req, res) => {
   const distinct = (k && (k.leadId || md.lead_id)) || email || insta;
   await Promise.all([
     board,
-    sendSlack(lines.join("\n")),
+    sendSlack(lines.join("\n"), ONBOARDING_CHANNEL),
     k && k.subId && s && !k.paypro ? s.subscriptions.update(k.subId, { metadata: { onboarding_ingevuld: new Date().toISOString() } }).catch(() => null) : null,
   ]);
   if (ph) {

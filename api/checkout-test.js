@@ -252,8 +252,8 @@ async function createLinks(req, res, s) {
           if (pl.metadata && pl.metadata.test === "49_14_dagen" && pl.metadata.plan === plan) { existing = pl; break; }
         }
         if (existing && existing.metadata.prijs === "incl_btw") { out.links[plan] = { ok: true, url: existing.url, nieuw: false }; continue; }
-        // Oude link (€49 + btw) uitzetten; de nieuwe rekent €49 inclusief btw.
-        if (existing) { await s.paymentLinks.update(existing.id, { active: false }); out.links[plan + "_oud_uitgezet"] = existing.url; }
+        // De oude link (€49 + btw) blijft werken voor wie hem al heeft; zet hem zelf uit in Stripe.
+        if (existing) out.links[plan + "_oud_nog_actief"] = existing.url;
         const metadata = { test: "49_14_dagen", plan, lp_variant: "betaallink", bron: "betaallink", prijs: "incl_btw" };
         const p = {
           metadata,

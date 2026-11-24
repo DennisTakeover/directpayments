@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account koppelen | PromoView</title>
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF8FB;--card:#FFFFFF;--pink:#DE2F55;--ink:#14121A;--dim:#585161;--mute:#807889;--line:#E5E0EA;--field:#D9D3DF;--green:#15A34A;--soft:#FFF1F4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.55;min-height:100vh;padding:24px 16px 48px;
+  background-image:radial-gradient(ellipse 60% 50% at 50% 110%,rgba(194,43,175,.12),transparent 65%)}
+.wrap{max-width:520px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin:0 2px 14px;font-size:13.5px;color:var(--dim);font-weight:600}
+.top b{color:var(--ink);font-weight:800;letter-spacing:-.01em;font-size:16px}
+.bar{height:6px;border-radius:99px;background:#EFEAF2;overflow:hidden;margin:0 0 18px}
+.bar i{display:block;height:100%;width:0;background:var(--pink);border-radius:99px;transition:width .3s ease}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 24px;box-shadow:0 1px 3px rgba(26,22,32,.05)}
+.kicker{font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--pink);margin-bottom:6px}
+h1{font-size:clamp(22px,5vw,28px);line-height:1.2;letter-spacing:-.02em;margin-bottom:8px}
+.lead{color:var(--dim);margin-bottom:18px;font-size:15px}
+.safe{display:flex;gap:10px;align-items:flex-start;background:#F2FBF5;border-radius:12px;padding:12px 14px;margin:0 0 18px;font-size:14px;color:#2f4a38}
+.safe b{color:var(--ink)}
+.fld{margin:0 0 14px}
+.fld label{display:block;font-weight:700;font-size:14.5px;margin:0 0 6px}
+.box{display:flex;align-items:center;border:1.5px solid var(--field);border-radius:10px;background:#fff}
+.box span{padding-left:12px;color:var(--mute);font-weight:700}
+.box input{flex:1;min-width:0;font:inherit;font-size:16px;padding:12px 13px;border:0;background:transparent;color:var(--ink)}
+.box input:focus{outline:none}
+.box:focus-within{border-color:var(--pink);box-shadow:0 0 0 3px rgba(222,47,85,.15)}
+.box button{border:0;background:none;padding:0 12px;font-size:14px;font-weight:700;color:var(--dim);cursor:pointer}
+.err{display:none;color:#9b1c3a;font-size:13px;margin-top:6px}
+.fld.bad .err{display:block}.fld.bad .box{border-color:#D23B5C}
+.list{list-style:none;margin:6px 0 18px;display:grid;gap:6px;font-size:13.5px;color:var(--dim)}
+.steps{counter-reset:s;list-style:none;margin:0 0 18px;display:grid;gap:10px}
+.steps li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px}
+.steps li::before{counter-increment:s;content:counter(s);flex:none;width:26px;height:26px;border-radius:50%;background:var(--soft);color:var(--pink);font-weight:800;display:grid;place-items:center;font-size:13px}
+.steps b{color:var(--ink)}
+.btn{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--pink);color:#fff;border:0;border-radius:12px;font:inherit;font-weight:800;font-size:17px;padding:15px 20px;cursor:pointer;margin-top:4px}
+.btn:disabled{opacity:.6;cursor:wait}
+.link{display:block;width:100%;background:none;border:0;font:inherit;font-size:14px;color:var(--dim);text-decoration:underline;margin-top:12px;cursor:pointer}
+.formerr{display:none;margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--soft);color:#9b1c3a;font-size:14px}
+.done{text-align:center}
+.check{width:64px;height:64px;border-radius:50%;background:rgba(21,163,74,.1);border:1px solid rgba(21,163,74,.4);display:grid;place-items:center;margin:0 auto 18px;color:var(--green);font-size:30px;font-weight:800}
+.next{text-align:left;margin:22px 0 4px;border-top:1px solid var(--line);padding-top:16px}
+.next div{display:flex;gap:12px;padding:6px 0;font-size:15px}
+.next b{color:var(--pink)}
+.note{font-size:13px;color:var(--dim);margin-top:14px;text-align:center}
+.note a{color:var(--dim)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><b>PromoView</b><span id="cnt">Stap 1 van 2</span></div>
+  <div class="bar"><i id="bar" style="width:0%"></i></div>
+  <div class="card">
+
+    <section id="s1">
+      <p class="kicker">Laatste stap</p>
+      <h1 id="h1">Koppel je Instagram-account</h1>
+      <p class="lead">Hiermee kunnen wij het groeisysteem op jouw account zetten. Daarna hoef jij niets meer te doen.</p>
+      <div class="safe"><span>🔒</span><span><b>Veilig en versleuteld.</b> Je gegevens worden direct versleuteld opgeslagen, alleen ons team kan ze inzien en we delen ze nooit met anderen.</span></div>
+      <div class="fld" data-f="u"><label for="u">Instagram-gebruikersnaam</label><div class="box"><span>@</span><input id="u" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" placeholder="jouwbedrijf"></div><small class="err">Vul je Instagram-naam in, zonder spaties.</small></div>
+      <div class="fld" data-f="p"><label for="p">Instagram-wachtwoord</label><div class="box"><input id="p" type="password" autocomplete="current-password" placeholder="Je wachtwoord"><button type="button" id="eye" aria-label="Wachtwoord tonen">Toon</button></div><small class="err">Vul je wachtwoord in.</small></div>
+      <ul class="list"><li>✓ Versleutelde verbinding (SSL)</li><li>✓ Alleen zichtbaar voor het PromoView-team</li><li>✓ Je kunt je wachtwoord na de koppeling altijd wijzigen</li></ul>
+      <button class="btn" id="b1" type="button">Verder →</button>
+    </section>
+
+    <section id="s2" hidden>
+      <p class="kicker">Tweestapsverificatie</p>
+      <h1>Vul je back-upcode in</h1>
+      <p class="lead">Staat tweestapsverificatie (2FA) aan op je Instagram? Dan hebben we één back-upcode nodig om in te loggen. Zo vind je hem:</p>
+      <ol class="steps">
+        <li><span>Open de <b>Instagram-app</b>, ga naar je profiel en tik op <b>☰ → Instellingen</b>.</span></li>
+        <li><span>Ga naar <b>Accountcentrum → Wachtwoord en beveiliging</b>.</span></li>
+        <li><span>Tik op <b>Tweestapsverificatie</b> en kies je account.</span></li>
+        <li><span>Tik op <b>Aanvullende methoden → Back-upcodes</b> en kopieer één code.</span></li>
+      </ol>
+      <div class="fld" data-f="c"><label for="c">Back-upcode</label><div class="box"><input id="c" inputmode="numeric" autocomplete="one-time-code" autocorrect="off" spellcheck="false" placeholder="Bijv. 1234 5678"></div><small class="err">Vul een back-upcode in, of kies hieronder dat je geen 2FA hebt.</small></div>
+      <button class="btn" id="b2" type="button">Koppeling voltooien 🚀</button>
+      <button class="link" id="no2fa" type="button">Ik heb geen tweestapsverificatie aan</button>
+      <button class="link" id="back" type="button">← Terug</button>
+      <p class="formerr" id="formerr" role="alert"></p>
+    </section>
+
+    <section class="done" id="s3" hidden>
+      <div class="check">✓</div>
+      <h1 id="doneH">Gelukt, je account is gekoppeld!</h1>
+      <p class="lead">We gaan direct voor je aan de slag. Binnen 48 uur staat je systeem live.</p>
+      <div class="next">
+        <div><b>1</b><span>We loggen veilig in en zetten het groeisysteem op je account.</span></div>
+        <div><b>2</b><span>We doen je gratis profielcheck en optimaliseren je bio en highlights.</span></div>
+        <div><b>3</b><span>Je hoort via WhatsApp zodra alles live staat.</span></div>
+      </div>
+      <p class="note">Krijg je een melding van Instagram over een nieuwe login? Dat zijn wij. Tik dan op “Dit was ik”.</p>
+    </section>
+  </div>
+  <p class="note">Vragen? <a href="https://wa.me/31685888134" target="_blank" rel="noopener">Stuur ons een WhatsApp</a></p>
+</div>
+<script>
+var CONFIG = { POSTHOG_KEY: "phc_kSvVeBDoVN4rSTWzSk48YbYS29qPRQkBrDBzZAzUDQvv", POSTHOG_HOST: "https://eu.i.posthog.com", PAGE_VERSION: "koppeling-v1" };
+!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once unregister identify alias set_config reset opt_in_capturing opt_out_capturing get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+// Geen sessie-opnames of automatische klik-tracking op deze pagina: hier staat een wachtwoordveld.
+posthog.init(CONFIG.POSTHOG_KEY,{api_host:CONFIG.POSTHOG_HOST,person_profiles:"identified_only",capture_pageview:true,autocapture:false,disable_session_recording:true});
+posthog.register({page_version:CONFIG.PAGE_VERSION});
+function track(e,p){try{posthog.capture(e,p||{})}catch(_){}}
+
+(function(){
+var $=function(id){return document.getElementById(id)};
+var q=new URLSearchParams(location.search),REF=q.get("ref")||"";
+var LEAD={};try{LEAD=JSON.parse(localStorage.getItem("pv_lead"))||{}}catch(_){}
+if(!REF&&LEAD.sub)REF=LEAD.sub;
+try{if(LEAD.lead_id)posthog.identify(LEAD.lead_id)}catch(_){}
+if(LEAD.insta)$("u").value=LEAD.insta;
+function step(n){["s1","s2","s3"].forEach(function(id,i){$(id).hidden=i!==n-1});
+  $("bar").style.width=(n===1?33:n===2?66:100)+"%";$("cnt").textContent=n<3?"Stap "+n+" van 2":"Klaar";
+  window.scrollTo({top:0,behavior:"smooth"});track("koppeling_step",{step:n})}
+function h(v){v=String(v||"").trim();var m=v.match(/instagram\.com\/([^\/?#\s]+)/i);if(m)v=m[1];return v.replace(/^@+/,"").replace(/\/+$/,"")}
+function bad(f,on){var el=document.querySelector('.fld[data-f="'+f+'"]');if(el)el.classList.toggle("bad",!!on)}
+["u","p","c"].forEach(function(id){$(id).addEventListener("input",function(){bad(id,false)})});
+$("eye").addEventListener("click",function(){var p=$("p");p.type=p.type==="password"?"text":"password";this.textContent=p.type==="password"?"Toon":"Verberg"});
+$("b1").addEventListener("click",function(){var u=h($("u").value),okU=/^[A-Za-z0-9._]{1,30}$/.test(u),okP=$("p").value.length>=4;
+  bad("u",!okU);bad("p",!okP);if(!okU||!okP){track("koppeling_invalid",{step:1});return}step(2)});
+$("back").addEventListener("click",function(){step(1)});
+var busy=false;
+async function send(code){if(busy)return;busy=true;var btn=$("b2");btn.disabled=true;btn.textContent="Bezig met koppelen…";$("formerr").style.display="none";
+  var d=null;try{var r=await fetch("/api/koppeling",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({instagram:h($("u").value),wachtwoord:$("p").value,backup_code:code||"",ref:REF})});d=await r.json()}catch(_){}
+  busy=false;btn.disabled=false;btn.textContent="Koppeling voltooien 🚀";
+  if(!d||!d.ok){track("koppeling_error",{code:(d&&d.error)||"network"});var fe=$("formerr");
+    fe.innerHTML='Koppelen lukt even niet. Probeer het zo nog eens, of <a href="https://wa.me/31685888134" target="_blank" rel="noopener">stuur ons een WhatsApp</a>.';fe.style.display="block";return}
+  $("p").value="";$("c").value="";
+  track("koppeling_completed",{met_backupcode:!!code});step(3)}
+$("b2").addEventListener("click",function(){var c=$("c").value.trim();if(c.replace(/\s/g,"").length<4){bad("c",true);return}send(c)});
+$("no2fa").addEventListener("click",function(){track("koppeling_geen_2fa");send("")});
+// Voornaam en Instagram uit de betaling, zodat de klant die niet opnieuw hoeft te typen.
+(async function(){if(!REF)return;try{var r=await fetch("/api/onboarding?ref="+encodeURIComponent(REF)),d=await r.json();
+  if(d&&d.known){if(d.insta&&!$("u").value)$("u").value=d.insta;if(d.voornaam)$("h1").textContent=d.voornaam+", koppel je Instagram-account"}}catch(_){}})();
+track("koppeling_view",{ref_type:REF?REF.slice(0,3):"geen"});
+step(1);
+})();
+</script>
+</body>
+</html>
