@@ -330,7 +330,7 @@ async function bioHighlightsPdf(a, highlights, infographic, meta) {
   const hl = (Array.isArray(highlights) && highlights.length ? highlights : (a.highlights || [])).slice(0, 6);
   if (hl.length) {
     w.addPage(false);
-    w.section("Highlights", "Covers in jouw stijl. Sla de afbeeldingen op en gebruik ze als highlight-cover.");
+    w.section("Highlights", "Covers in jouw stijl. Je krijgt ze van ons ook als losse afbeeldingen: sla ze op je telefoon op en kies ze als highlight-cover.");
     const cols = 3, gap = 14, cw = (W - 2 * M - gap * (cols - 1)) / cols, r = 46;
     for (let i = 0; i < hl.length; i += cols) {
       const row = hl.slice(i, i + cols);
@@ -381,7 +381,23 @@ async function maakRapporten({ analyse, highlights, infographic, insta, test }) 
     pdf1_naam: `Profielcheck-${insta}.pdf`,
     pdf2: Buffer.from(p2).toString("base64"),
     pdf2_naam: `Bio-en-highlights-${insta}.pdf`,
+    iconen: iconBestanden(highlights),
   };
+}
+
+// De highlight-iconen als losse afbeeldingen, om te downloaden en als cover in te stellen.
+function slug(s) {
+  return txt(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30) || "icoon";
+}
+function iconBestanden(highlights) {
+  return (highlights || [])
+    .map((h, i) => {
+      const data = String((h && h.img) || "").replace(/^data:[^,]+,/, "");
+      if (!data) return null;
+      const png = data.startsWith("iVBOR");
+      return { bestand: `Highlight-${i + 1}-${slug(h.naam)}.${png ? "png" : "jpg"}`, titel: `Highlight ${i + 1}: ${txt(h.naam)}`, data };
+    })
+    .filter(Boolean);
 }
 
 module.exports = { maakRapporten };
