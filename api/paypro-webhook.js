@@ -92,10 +92,13 @@ async function handle(ph, event) {
       const who = `${md.insta ? "@" + md.insta : "klant"}`;
       const amount = (o.amount || 0) / 100;
       const firstAfterTrial = await claimOnceSub(sub, "pv_doorbetaald");
-      if (ph) ph.capture({
+      // trial_converted telt één keer per klant: ook het slepen naar "Doorbetaald" in Trello
+      // meldt dit (api/board-status.js). Wie eerst is zet de stempel pv_trial_ph.
+      const countTrial = firstAfterTrial && await claimOnceSub(sub, "pv_trial_ph");
+      if (ph && (!firstAfterTrial || countTrial)) ph.capture({
         distinctId: md.lead_id || sub.customer,
         event: firstAfterTrial ? "trial_converted" : "subscription_renewed",
-        uuid: stableUuid(`paypro_payment_${o.id}`),
+        uuid: stableUuid(firstAfterTrial ? `trial_converted_${sub.id}` : `paypro_payment_${o.id}`),
         properties: Object.assign({ amount, currency: "EUR", paypro_payment_id: o.id, lead_id: md.lead_id || null }, subProps(sub), base),
       });
       await Promise.all([
