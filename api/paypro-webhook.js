@@ -45,12 +45,19 @@ async function getSub(id) {
   try { return id ? await pp("GET", "/subscriptions/" + encodeURIComponent(id)) : null; } catch (_) { return null; }
 }
 
+// Klantgegevens voor Meta: e-mail, telefoon, naam (gehasht in meta.js), lead-id en de
+// browser-id's/IP/UA die de betaalstap in de metadata bewaarde.
+function metaUser(session) {
+  const cd = session.customer_details || {};
+  const md = session.metadata || {};
+  return { email: cd.email, phone: cd.phone, name: cd.name, externalId: session.client_reference_id || null, fbp: md.fbp, fbc: md.fbc, ip: md.ip, ua: md.ua };
+}
+
 // De eerste betaling: precies dezelfde meldingen als bij Stripe (en als de bedankpagina).
 async function onStarted(ph, subId) {
   const { sub, paid, session } = await paySession(subId);
   if (!session || !paid) return;
   capturePurchase(ph, session, "paypro_webhook");
-  const cd = session.customer_details || {};
   const first = await claimOnceSub(sub);
   await Promise.all([
     first ? sendToGhl("payment", ghlPaymentPayload(session, "paypro_webhook")) : null,
@@ -59,7 +66,8 @@ async function onStarted(ph, subId) {
     sendMetaEvent({
       eventName: "Purchase",
       eventId: `purchase_${session.id}`,
-      user: { email: cd.email, phone: cd.phone, name: cd.name, externalId: session.client_reference_id || null },
+      eventSourceUrl: "https://landing.promo-view.io/",
+      user: metaUser(session),
       customData: { value: amountOf(session), currency: "EUR", content_name: contentName(session) },
     }),
   ]);
@@ -67,7 +75,7 @@ async function onStarted(ph, subId) {
 
 async function handle(ph, event) {
   const o = event.payload || {};
-  const base = { paypro_event_id: event.id, source: "paypro_webhook" };
+  const base = { paypro_event_id: event.id, source: "paypro_webhook", omgeving: process.env.VERCEL_ENV === "production" ? "live" : "test" };
 
   switch (event.event_type) {
     case "subscription.started":
@@ -97,12 +105,13 @@ async function handle(ph, event) {
         boardEvent(firstAfterTrial
           ? { event: "doorbetaald", key: sub.id, list: "door", comment: `✅ Doorbetaald na de proef: ${euro(amount)} per maand (incl. btw).` }
           : { event: "maandbetaling", key: sub.id, comment: `🔁 Maandbetaling ontvangen: ${euro(amount)}.` }),
-        firstAfterTrial ? sendMetaEvent({
+        firstAfterTrial ? paySession(sub.id).then(({ session }) => sendMetaEvent({
           eventName: "Subscribe",
           eventId: `subscribe_${o.id}`,
-          user: { externalId: md.lead_id || null },
+          eventSourceUrl: "https://landing.promo-view.io/",
+          user: session ? metaUser(session) : { externalId: md.lead_id || null },
           customData: { value: amount, currency: "EUR", content_name: "PromoView Groeisysteem" },
-        }) : null,
+        })) : null,
       ]);
       return;
     }

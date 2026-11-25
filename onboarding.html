@@ -127,8 +127,8 @@ input:focus,textarea:focus{outline:none;border-color:var(--pink);box-shadow:0 0 
 var CONFIG = { POSTHOG_KEY: "phc_kSvVeBDoVN4rSTWzSk48YbYS29qPRQkBrDBzZAzUDQvv", POSTHOG_HOST: "https://eu.i.posthog.com", META_PIXEL_ID: "1766223344686526", PAGE_VERSION: "onboarding-v1" };
 !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once unregister identify alias set_config reset opt_in_capturing opt_out_capturing get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
 posthog.init(CONFIG.POSTHOG_KEY,{api_host:CONFIG.POSTHOG_HOST,person_profiles:"identified_only",capture_pageview:true});
-posthog.register({page_version:CONFIG.PAGE_VERSION});
-!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+posthog.register({omgeving:(location.hostname==="landing.promo-view.io"?"live":"test"),funnel_page:"onboarding",page_version:CONFIG.PAGE_VERSION});
+window.PV_LIVE=location.hostname==="landing.promo-view.io";if(!window.PV_LIVE){window.fbq=window._fbq=function(){}}!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
 fbq("init",CONFIG.META_PIXEL_ID);fbq("track","PageView");
 function track(e,p){try{posthog.capture(e,p||{})}catch(_){}}
 
@@ -176,7 +176,7 @@ $("f").addEventListener("submit",async function(ev){ev.preventDefault();if(busy)
   if(bad.length){track("onboarding_invalid",{step:name,velden:bad.join(",")});var el=document.querySelector(".fld.bad input,.fld.bad textarea,.fld.bad button");if(el&&el.focus)el.focus();return}
   if(cur<steps.length-1){show(cur+1);return}
   busy=true;var btn=$("next");btn.disabled=true;btn.textContent="Versturen…";
-  var body={ref:REF,insta:h($("insta").value),bedrijf:$("bedrijf").value,product_dienst:pick.product_dienst,geslacht:pick.geslacht,leeftijd:pick.leeftijd,
+  var body={ref:REF,lead_id:LEAD.lead_id||"",insta:h($("insta").value),bedrijf:$("bedrijf").value,product_dienst:pick.product_dienst,geslacht:pick.geslacht,leeftijd:pick.leeftijd,
     locatie:$("locatie").value,interesses:$("interesses").value,profielen:profielen(),twee_fa:pick.twee_fa,welkomstbericht:$("welkomstbericht").value,
     naam:$("naam").value,email:$("email").value,telefoon:$("telefoon").value};
   var d=null;try{var r=await fetch("/api/onboarding",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});d=await r.json()}catch(_){}

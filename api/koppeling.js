@@ -40,14 +40,19 @@ function handle(v) {
 }
 
 // Welke klant is dit? Via de ref uit de link, anders het PayPro-abonnement met deze Instagram-naam.
+// Geeft ook de lead-id terug: daarop staat de klant in PostHog (zelfde persoon als op de landingspagina).
 async function findKey(ref, insta) {
-  if (/^(PS[A-Z0-9]+|sub_\w+|cs_\w+)$/.test(ref)) return ref;
+  if (/^PS[A-Z0-9]+$/.test(ref)) {
+    try { const sub = await pp("GET", "/subscriptions/" + encodeURIComponent(ref)); return { key: ref, leadId: (sub.metadata && sub.metadata.lead_id) || null }; } catch (_) {}
+    return { key: ref, leadId: null };
+  }
+  if (/^(sub_\w+|cs_\w+)$/.test(ref)) return { key: ref, leadId: null };
   try {
     const list = await pp("GET", "/subscriptions?limit=50");
     const hit = ((list && list.data) || []).find((x) => x.metadata && x.metadata.pv === "1" && String(x.metadata.insta || "").toLowerCase() === insta);
-    if (hit) return hit.id;
+    if (hit) return { key: hit.id, leadId: hit.metadata.lead_id || null };
   } catch (_) {}
-  return null;
+  return { key: null, leadId: null };
 }
 
 // Eenvoudige rem op het raden van de teamcode (per warme functie).
@@ -104,7 +109,9 @@ module.exports = async (req, res) => {
     demo = true;
   }
   const link = token ? `${BASE}/intern/koppeling#${token}` : null;
-  const key = await findKey(clean(b.ref, 60), insta);
+  const found = await findKey(clean(b.ref, 60), insta);
+  const key = found.key;
+  const leadId = found.leadId || clean(b.lead_id, 100).replace(/[^A-Za-z0-9_-]/g, "") || null;
   const now = new Date().toLocaleString("nl-NL", { timeZone: "Europe/Amsterdam", dateStyle: "short", timeStyle: "short" });
   const where = demo
     ? "\n_DEMO (preview zonder KOPPEL_KEY): de gegevens zijn niet opgeslagen._"
@@ -125,7 +132,7 @@ module.exports = async (req, res) => {
   ]);
   const ph = getPostHog();
   if (ph) {
-    ph.capture({ distinctId: key || "koppeling_" + insta, event: "instagram_gekoppeld", properties: { met_backupcode: !!code, betaling_gevonden: !!key, demo, source: "koppelpagina" } });
+    ph.capture({ distinctId: leadId || key || "koppeling_" + insta, event: "instagram_gekoppeld", properties: { met_backupcode: !!code, betaling_gevonden: !!key, lead_id: leadId, paypro_subscription_id: key && key.startsWith("PS") ? key : null, demo, source: "koppelpagina", omgeving: process.env.VERCEL_ENV === "production" ? "live" : "test" } });
     await ph.shutdown();
   }
   return res.status(200).json({ ok: true });

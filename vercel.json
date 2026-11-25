@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/v7.html"
+    },
+    {
       "source": "/thank-you",
       "destination": "/bedankt.html"
     },
@@ -9,44 +13,12 @@
       "destination": "/bedankt.html"
     },
     {
-      "source": "/start",
-      "destination": "/start.html"
-    },
-    {
-      "source": "/v2",
-      "destination": "/v2.html"
-    },
-    {
-      "source": "/v3",
-      "destination": "/v3.html"
-    },
-    {
-      "source": "/v4",
-      "destination": "/v4.html"
-    },
-    {
-      "source": "/v5",
-      "destination": "/v5.html"
-    },
-    {
-      "source": "/afrekenen",
-      "destination": "/afrekenen.html"
-    },
-    {
-      "source": "/v6",
-      "destination": "/v6.html"
-    },
-    {
       "source": "/afspraak-bevestigd",
       "destination": "/bedankt-afspraak.html"
     },
     {
       "source": "/v7",
       "destination": "/v7.html"
-    },
-    {
-      "source": "/v8",
-      "destination": "/v8.html"
     },
     {
       "source": "/onboarding",
@@ -97,5 +69,117 @@
       "includeFiles": "api/_fonts/**",
       "maxDuration": 30
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v2",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v2.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v3",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v3.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v4",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v4.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v5",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v5.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v6",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v6.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v8",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/v8.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/start",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/start.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/start2.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/start3.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/start4.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/start5.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/start6.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/afrekenen",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/afrekenen.html",
+      "destination": "/",
+      "permanent": false
+    }
+  ]
 }

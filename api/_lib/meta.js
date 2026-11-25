@@ -34,10 +34,35 @@ function clean(obj) {
   return obj;
 }
 
+// _fbp en _fbc staan als cookie op landing.promo-view.io en gaan mee met elk API-verzoek.
+function fbFromCookies(req) {
+  const c = String((req && req.headers && req.headers.cookie) || "");
+  const get = (n) => { const m = c.match(new RegExp("(?:^|;\\s*)" + n + "=([^;]+)")); return m ? decodeURIComponent(m[1]) : undefined; };
+  return { fbp: get("_fbp"), fbc: get("_fbc") };
+}
+
+// Wat we bij de betaalstap bewaren (PayPro-metadata), zodat de webhook later dezelfde
+// bezoeker aan Meta kan koppelen: browser-id's, IP en user agent.
+function trackingFields(req, body) {
+  const fb = fbFromCookies(req);
+  const ok = (v, max) => (v && String(v).length <= max ? String(v) : undefined);
+  const ua = req && req.headers && req.headers["user-agent"];
+  return {
+    fbp: ok((body && body.fbp) || fb.fbp, 200),
+    fbc: ok((body && body.fbc) || fb.fbc, 200),
+    ip: ok(clientIp(req), 60),
+    ua: ok(ua, 200),
+  };
+}
+
 async function sendMetaEvent({ eventName, eventId, eventSourceUrl, user = {}, customData = {}, testEventCode }) {
   const pixel = process.env.META_PIXEL_ID;
   const token = process.env.META_CAPI_TOKEN;
   if (!pixel || !token) return { ok: false, skipped: "meta_not_configured" };
+  // Alleen live (landing.promo-view.io) naar Meta, zodat tests op previews de advertentiedata
+  // niet vervuilen. Met META_TEST_EVENT_CODE kun je previews bewust in "Test events" zien.
+  const tec0 = testEventCode || process.env.META_TEST_EVENT_CODE;
+  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production" && !tec0) return { ok: false, skipped: "not_production" };
 
   const firstName = user.name ? String(user.name).trim().split(/\s+/)[0] : undefined;
   const phone = normPhone(user.phone);
@@ -81,4 +106,4 @@ async function sendMetaEvent({ eventName, eventId, eventSourceUrl, user = {}, cu
   }
 }
 
-module.exports = { sendMetaEvent, clientIp, normPhone };
+module.exports = { sendMetaEvent, clientIp, normPhone, fbFromCookies, trackingFields };

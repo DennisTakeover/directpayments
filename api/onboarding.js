@@ -5,6 +5,7 @@ const { boardEvent } = require("./_lib/board");
 const { sendProfielcheck } = require("./_lib/profielcheck");
 const { nativeSession, stableUuid, localPhone } = require("./_lib/payment");
 const { paySession } = require("./_lib/paypro");
+const { sendMetaEvent, clientIp, fbFromCookies } = require("./_lib/meta");
 
 // De eigen onboarding (onboarding.html), een kortere versie van de Typeform.
 //
@@ -243,8 +244,20 @@ module.exports = async (req, res) => {
 
   const ph = getPostHog();
   const distinct = (k && (k.leadId || md.lead_id)) || email || insta;
+  // Meta: CompleteRegistration, met dezelfde event-id als de pixel op de onboardingpagina
+  // ("onb_" + ref, anders lead-id), zodat Meta browser + server als één event telt.
+  const leadId = (k && (k.leadId || md.lead_id)) || clean(b.lead_id, 100) || null;
+  const fb = fbFromCookies(req);
+  const metaOnb = sendMetaEvent({
+    eventName: "CompleteRegistration",
+    eventId: "onb_" + (clean(b.ref, 100) || leadId || email),
+    eventSourceUrl: req.headers.referer || "https://landing.promo-view.io/onboarding",
+    user: { email, phone, name, externalId: leadId, ip: clientIp(req), ua: req.headers["user-agent"], fbp: fb.fbp, fbc: fb.fbc },
+    customData: { content_name: "PromoView onboarding" },
+  });
   await Promise.all([
     board,
+    metaOnb,
     sendSlack(lines.join("\n"), ONBOARDING_CHANNEL),
     sendProfielcheck({ ref: k ? k.subId || k.ref : null, insta, naam: name, ...a, profielen, niche: md.niche, doel: md.doel })
       .then((r) => { if (!r.ok && !r.skipped) console.error("[onboarding] profielcheck", r); }),
@@ -255,7 +268,7 @@ module.exports = async (req, res) => {
       distinctId: distinct,
       event: "onboarding_completed",
       uuid: stableUuid(`onboarding_${(k && k.ref) || email}_${new Date().toISOString().slice(0, 10)}`),
-      properties: { source: "server", ref: k ? k.ref : null, plan: md.plan || null, lp_variant: md.lp_variant || null, niche: md.niche || null, gekoppeld: !!k, make_ok: make.ok, profielen: profielen.length, twee_fa: a.twee_fa || null },
+      properties: { source: "server", omgeving: process.env.VERCEL_ENV === "production" ? "live" : "test", lead_id: leadId, ref: k ? k.ref : null, plan: md.plan || null, lp_variant: md.lp_variant || null, niche: md.niche || null, gekoppeld: !!k, make_ok: make.ok, profielen: profielen.length, twee_fa: a.twee_fa || null },
     });
     await ph.shutdown();
   }

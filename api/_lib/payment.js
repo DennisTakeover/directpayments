@@ -44,7 +44,7 @@ function capturePurchase(ph, session, source) {
     uuid: stableUuid(`purchase_${session.id}`),
     timestamp: new Date((session.created || Date.now() / 1000) * 1000),
     properties: Object.assign(
-      { amount_total: amountOf(session), currency: session.currency, lead_id: leadId, source },
+      { amount_total: amountOf(session), currency: session.currency, lead_id: leadId, source, provider: session.provider || "stripe", omgeving: process.env.VERCEL_ENV === "production" ? "live" : "test" },
       sessionProps(session)
     ),
   });

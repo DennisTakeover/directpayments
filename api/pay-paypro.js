@@ -1,4 +1,5 @@
 const { pp, PayProError, OFFER } = require("./_lib/paypro");
+const { trackingFields } = require("./_lib/meta");
 
 // Eigen betaalstap op v7 via PayPro.
 //
@@ -94,6 +95,9 @@ module.exports = async (req, res) => {
   const last = parts.join(" ");
   const base = baseUrl(req);
   const metadata = metadataFor(b, d);
+  // Voor de Meta Conversions API bij de webhook (aankoop en doorbetalen): dezelfde bezoeker.
+  const tf = trackingFields(req, b);
+  Object.keys(tf).forEach((k) => { if (tf[k]) metadata[k] = tf[k]; });
   const leadQ = metadata.lead_id ? `pv_lead=${encodeURIComponent(metadata.lead_id)}&` : "";
 
   try {
