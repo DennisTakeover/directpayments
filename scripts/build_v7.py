@@ -166,7 +166,7 @@ def quote(key, src):
 TRUST_STRIP = (
     f'<div class="pv-trust-wrap"><a class="pv-trust" href="{TP_URL}" target="_blank" rel="noopener" onclick=\'track("trustpilot_click",{{source:"hero_strip"}})\'>'
     '<span class="pv-trust-avs">' + "".join(f'<img src="{REVIEWS[k][1]}" alt="" loading="lazy" width="32" height="32">' for k in ("novio", "rachel", "sven", "jordy")) + '</span>'
-    f'<span class="pv-trust-txt">{STARS} <b>4,8</b> op Trustpilot · 114 reviews<small>1.500+ ondernemers gingen je voor</small></span></a></div>'
+    f'<span class="pv-trust-txt">{STARS} <b>4,8</b> op Trustpilot<small>1.500+ ondernemers gingen je voor</small></span></a></div>'
 )
 
 
@@ -294,7 +294,7 @@ def quiz_steps(cfg):
         '<button type="button" class="btn" id="pvPayBtn">Start mijn test voor €49 <span class="arrow">→</span></button>'
         '<p class="pv-pay-err" id="pvPayErr" hidden></p>'
         f'<p class="modal-risk">{cfg["modal_risk"]}</p>'
-        f'<div class="pv-res-trust">{STARS} <b>4,8</b> op Trustpilot · 114 reviews · 1.500+ ondernemers</div>'
+        f'<div class="pv-res-trust">{STARS} <b>4,8</b> op Trustpilot · 1.500+ ondernemers</div>'
         f'<p class="pv-res-quote">“{REVIEWS["lure"][3]}” <b>@{REVIEWS["lure"][0]}</b></p></div>'
         '<div class="pv-res" id="pvResNo" hidden><div class="pv-res-ico pv-res-ico-no">🌱</div>'
         '<h3>Je account is nog te jong</h3>'
@@ -327,7 +327,7 @@ PAY_STEP = (
     '<button type="submit" class="btn" id="pvPaySubmit">🔒 Betaal €49 met iDEAL</button>'
     '<p class="pv-terms">Vandaag betaal je €49 (incl. btw) voor 14 dagen. Daarna loopt het door voor €229,90 per maand (€190 + btw) via automatische incasso, tenzij je vóór dag 14 opzegt. Daarna is het elke maand opzegbaar.</p>'
     '<div class="pv-secure"><span>🔒 Veilig betalen via PayPro</span><a href="#" id="pvCard">Liever met creditcard?</a></div>'
-    f'<div class="pv-res-trust">{STARS} <b>4,8</b> op Trustpilot · 114 reviews</div>'
+    f'<div class="pv-res-trust">{STARS} <b>4,8</b> op Trustpilot</div>'
     '</form></div>'
 )
 
