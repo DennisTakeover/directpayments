@@ -170,6 +170,103 @@ TRUST_STRIP = (
 )
 
 
+# ── Klantvideo's in de hero: één grote speler met pijltjes; na afloop start de volgende ──
+HERO_VIDEOS = [
+    ("203hiq923r", "Horeca", "Café de Muurbloem", "Van Instagram-volger naar gast aan de bar.", 290, "49d06f537a9320caf269be9981d33b7a35c802e2"),
+    ("tl7c2g7l8g", "Coach", "Maud van der Meer", "Elke nieuwe volger begon een gesprek.", 334, "d57747fa46d82995f60461dbd0d35baeab45abe7"),
+    ("i931wdmjlb", "Kledingwinkel", "Us Hoekje", "'s Morgens gepost, 's middags stonden ze in de winkel.", 195, "7b71dea87d4d19d34e0aa18423455a66e64e1f50"),
+    ("3yybqmwrpw", "Hovenier", "De Bevlogen Tuincoach", "Mijn DM's ontploften.", 257, "6769add8d2cac5533bc37de7931e1b1271ad2cc4"),
+    ("9l0iz2lszo", "Sport", "Padeltrainer Bob", "Ik krijg boekingen en lokale bekendheid.", 262, "eee73581e7857178b770ef810fbbd36174542754"),
+    ("6wkajknszc", "Fotograaf", "Jaap Vliegenthart", "Je maakt een soort custom plan voor mijn branche.", 157, "864056218a7b3e0ace90e4d8581e1c144ad7a996"),
+    ("i51jnuxo4x", "Coach", "Borntolove.be", "Twee retreat-deelnemers vonden haar via een simpele follow.", 286, "4a7091d0cec1a77c87f83c27bcc1137dd0c0a93c"),
+    ("e5shed6837", "Sieradenmerk", "Stenn Jewelry", "Promoview geeft kwalitatief resultaat.", 508, "e3975ade042aadc9c5c2afb8208e9d75a8896b5f"),
+]
+
+
+def _hero_video():
+    import json as _json
+    thumb = lambda h: f"https://embed-ssl.wistia.com/deliveries/{h}.jpg?image_crop_resized=720x720"
+    data = [{"id": v[0], "tag": v[1], "name": v[2], "quote": v[3], "dur": f"{v[4] // 60}:{v[4] % 60:02d}", "thumb": thumb(v[5])} for v in HERO_VIDEOS]
+    first = data[0]
+    dots = "".join(f'<button type="button" class="pv-hv-dot{" on" if i == 0 else ""}" data-i="{i}" aria-label="Video {i + 1}: {d["name"]}"></button>' for i, d in enumerate(data))
+    arrow = lambda d: f'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="{d}"/></svg>'
+    css = (
+        '<style>'
+        '.pv-hv{position:relative;width:min(100%,500px);margin:22px auto 6px;text-align:left}'
+        '.pv-hv-stage{position:relative;aspect-ratio:1/1;border-radius:20px;overflow:hidden;background:#14121A;'
+        'box-shadow:0 18px 50px rgba(20,18,26,.22),0 0 0 1px rgba(20,18,26,.06)}'
+        '.pv-hv-stage .wistia_embed,.pv-hv-stage iframe{position:absolute;inset:0;width:100%!important;height:100%!important}'
+        '.pv-hv-poster{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;cursor:pointer;background:#14121A;display:block}'
+        '.pv-hv-poster img{width:100%;height:100%;object-fit:cover;display:block}'
+        '.pv-hv-poster::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,18,26,0) 55%,rgba(20,18,26,.55))}'
+        '.pv-hv-play{position:absolute;left:50%;top:50%;width:78px;height:78px;margin:-39px 0 0 -39px;border-radius:50%;'
+        'background:#DE2F55;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(222,47,85,.45);z-index:1;transition:transform .2s}'
+        '.pv-hv-poster:hover .pv-hv-play{transform:scale(1.06)}'
+        '.pv-hv-play svg{width:34px;height:34px;fill:#fff;margin-left:4px}'
+        '.pv-hv-meta{position:absolute;left:14px;bottom:12px;right:14px;z-index:1;display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:13px;font-weight:600}'
+        '.pv-hv-meta span{background:rgba(20,18,26,.55);padding:4px 9px;border-radius:999px}'
+        '.pv-hv-nav{position:absolute;top:calc(50% - 22px);z-index:3;width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;'
+        'background:#fff;color:#14121A;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(20,18,26,.22)}'
+        '.pv-hv-nav svg{width:24px;height:24px;fill:currentColor}'
+        '.pv-hv-nav:focus-visible,.pv-hv-dot:focus-visible,.pv-hv-poster:focus-visible{outline:3px solid #DE2F55;outline-offset:2px}'
+        '.pv-hv-prev{left:-22px}.pv-hv-next{right:-22px}'
+        '@media(max-width:600px){.pv-hv-prev{left:8px}.pv-hv-next{right:8px}.pv-hv-nav{width:40px;height:40px;top:calc(50% - 20px)}}'
+        '.pv-hv-cap{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:12px}'
+        '.pv-hv-cap b{display:block;font-size:16px;color:#14121A}'
+        '.pv-hv-cap q{display:block;font-size:14px;color:#585161;margin-top:2px;quotes:"\\201C" "\\201D"}'
+        '.pv-hv-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#DE2F55;margin-bottom:2px}'
+        '.pv-hv-count{flex:none;font-size:13px;font-weight:700;color:#585161;padding-top:2px}'
+        '.pv-hv-dots{display:flex;justify-content:center;gap:6px;margin-top:10px}'
+        '.pv-hv-dot{width:8px;height:8px;padding:0;border:0;border-radius:999px;background:#D9D3DF;cursor:pointer;transition:width .2s,background .2s}'
+        '.pv-hv-dot.on{width:22px;background:#DE2F55}'
+        '.pv-hv-auto{text-align:center;font-size:12.5px;color:#585161;margin:6px 0 0}'
+        '</style>'
+    )
+    html = (
+        '<div class="pv-hv" id="pvHv" role="region" aria-roledescription="carrousel" aria-label="Klantvideo\'s">'
+        '<div class="pv-hv-stage" id="pvHvStage">'
+        f'<button type="button" class="pv-hv-poster" id="pvHvPoster" aria-label="Speel video af: {first["name"]}">'
+        f'<img id="pvHvImg" src="{first["thumb"]}" alt="" width="500" height="500" fetchpriority="high">'
+        '<span class="pv-hv-play">' + arrow("M8 5v14l11-7z") + '</span>'
+        f'<span class="pv-hv-meta"><span>Klantverhaal</span><span id="pvHvDur">{first["dur"]}</span></span></button></div>'
+        '<button type="button" class="pv-hv-nav pv-hv-prev" id="pvHvPrev" aria-label="Vorige video">' + arrow("M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12z") + '</button>'
+        '<button type="button" class="pv-hv-nav pv-hv-next" id="pvHvNext" aria-label="Volgende video">' + arrow("M8.6 16.6 10 18l6-6-6-6-1.4 1.4 4.6 4.6z") + '</button>'
+        f'<div class="pv-hv-cap" aria-live="polite"><div><span class="pv-hv-tag" id="pvHvTag">{first["tag"]}</span>'
+        f'<b id="pvHvName">{first["name"]}</b><q id="pvHvQuote">{first["quote"]}</q></div>'
+        f'<span class="pv-hv-count" id="pvHvCount">1 / {len(data)}</span></div>'
+        f'<div class="pv-hv-dots" id="pvHvDots">{dots}</div>'
+        '<p class="pv-hv-auto">Na elke video start automatisch de volgende klant.</p></div>'
+    )
+    js = (
+        '<script>(function(){'
+        'var V=' + _json.dumps(data, ensure_ascii=False) + ';'
+        'var $=function(id){return document.getElementById(id)},stage=$("pvHvStage"),i=0,playing=false,api=false,gen=0;if(!stage)return;'
+        'function t(e,p){try{window.track&&track(e,p)}catch(_){}}'
+        'function caption(){var v=V[i];$("pvHvTag").textContent=v.tag;$("pvHvName").textContent=v.name;$("pvHvQuote").textContent=v.quote;'
+        '$("pvHvCount").textContent=(i+1)+" / "+V.length;[].forEach.call(document.querySelectorAll(".pv-hv-dot"),function(d,k){d.classList.toggle("on",k===i)})}'
+        'function poster(){var v=V[i];stage.innerHTML=\'<button type="button" class="pv-hv-poster" id="pvHvPoster" aria-label="Speel video af: \'+v.name+\'">\''
+        '+\'<img src="\'+v.thumb+\'" alt="" width="500" height="500"><span class="pv-hv-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>\''
+        '+\'<span class="pv-hv-meta"><span>Klantverhaal</span><span>\'+v.dur+\'</span></span></button>\';$("pvHvPoster").onclick=function(){play("klik")}}'
+        'function loadApi(){if(api)return;api=true;window._wq=window._wq||[];var s=document.createElement("script");s.src="https://fast.wistia.com/assets/external/E-v1.js";s.async=true;document.head.appendChild(s)}'
+        'function play(how){var v=V[i],my=++gen;playing=true;loadApi();'
+        'stage.innerHTML=\'<div class="wistia_embed wistia_async_\'+v.id+\' autoPlay=true playerColor=DE2F55 videoFoam=false" style="height:100%;width:100%">&nbsp;</div>\';'
+        'window._wq.push({id:v.id,onReady:function(video){if(my!==gen)return;try{video.play()}catch(_){}'
+        'video.bind("end",function(){if(my===gen){t("hero_video_ended",{video:v.name,index:i});go(i+1,"auto")}return video.unbind})}});'
+        't("video_play",{video:v.name,video_id:v.id,source:"hero",index:i,how:how});if(how!=="auto")t("vsl_started",{video:v.name,video_id:v.id,is_primary_vsl:i===0,source:"hero"})}'
+        'function go(n,how){gen++;i=(n+V.length)%V.length;caption();if(playing)play(how);else poster();if(how!=="auto")t("hero_video_nav",{to:i,video:V[i].name,how:how})}'
+        '$("pvHvPrev").onclick=function(){go(i-1,"pijl")};$("pvHvNext").onclick=function(){go(i+1,"pijl")};'
+        '[].forEach.call(document.querySelectorAll(".pv-hv-dot"),function(d){d.onclick=function(){go(+d.dataset.i,"bolletje")}});'
+        '$("pvHvPoster").onclick=function(){play("klik")};'
+        '$("pvHv").addEventListener("keydown",function(e){if(e.key==="ArrowRight"){go(i+1,"toets")}else if(e.key==="ArrowLeft"){go(i-1,"toets")}});'
+        'var x0=null;stage.addEventListener("touchstart",function(e){x0=e.touches[0].clientX},{passive:true});'
+        'stage.addEventListener("touchend",function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>45)go(i+(dx<0?1:-1),"swipe")},{passive:true});'
+        '})();</script>'
+    )
+    return css + html + js
+
+
+HERO_VIDEO = _hero_video()
+
 def opt(v, ico, label=None):
     return f'<button type="button" class="opt" data-v="{v}"><span class="ico">{ico}</span>{label or v}<span class="chev">›</span></button> '
 
@@ -463,7 +560,11 @@ def build(key, cfg):
     b = s.find('<div><span class="pv-price-tag">')
     if a < 0 or b < a:
         raise SystemExit(f"{key}: hero-cijfers niet gevonden")
-    s = s[:a] + TRUST_STRIP + '\n' + s[b:]
+    s = s[:a] + TRUST_STRIP + '\n' + HERO_VIDEO + '\n' + s[b:]
+    # Met de video in de hero valt de knop op mobiel onder de vouw: de vaste knop onderaan
+    # verschijnt zodra de hero-knop zelf niet in beeld is (ook vóórdat je erlangs scrolt).
+    s = R('observe(document.querySelector(".hero")||document.querySelector(".am-hero"))',
+          'observe(document.querySelector(".pv-hero-go")||document.querySelector(".am-hero"))')
     s = R('<p class="pv-hero-under">3 vragen · 30 seconden · daarna start je direct</p>',
           '<p class="pv-hero-under">3 vragen · 30 seconden · daarna start je direct</p>'
           '<div class="am-stats pv-stats-low"><div><b>1.500+</b><span>bedrijven geholpen</span></div><div><b>3M+</b><span>volgers gegenereerd</span></div>'
