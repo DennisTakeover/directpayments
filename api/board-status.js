@@ -44,6 +44,8 @@ module.exports = async (req, res) => {
   const status = clean(b.status, 30);
   if (status !== "doorbetaald") return res.status(400).json({ ok: false, error: "onbekende_status" });
   const cardId = clean(b.card_id, 40);
+  // Testkaarten (naam met "TEST") tellen nooit mee.
+  if (/\bTEST\b/.test(String(b.card_name || ""))) return res.status(200).json({ ok: true, skipped: "testkaart" });
   const ref = (String(b.desc || "").match(/Ref:\s*\**\s*([A-Za-z0-9_]+)/) || [])[1] || "";
 
   let sub = null, md = {};
