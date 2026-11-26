@@ -1,9 +1,9 @@
 // Eén keer melden, ook als meerdere routes tegelijk binnenkomen (PayPro subscription.started,
 // payment.paid en de bedankpagina komen vaak binnen dezelfde seconde).
 //
-// De beslissing ligt bij één plek: Make-scenario "PromoView – eenmalig melden (claim)" met
-// sequentiële verwerking en een data store. Verzoeken worden daar één voor één afgehandeld;
-// alleen de eerste voor een sleutel krijgt { claimed: true }.
+// De beslissing ligt bij één plek: Make-scenario "PromoView – eenmalig melden (claim)". Dat
+// schrijft de sleutel in een data store zonder overschrijven; de data store weigert een tweede
+// record met dezelfde sleutel. Alleen wie het record kon aanmaken krijgt { claimed: true }.
 //
 // Geeft true/false terug, of null als Make niet antwoordt (dan valt de aanroeper terug op de
 // oude stempel in PayPro- of Stripe-metadata).
