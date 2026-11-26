@@ -1,5 +1,4 @@
 const { PostHog } = require("posthog-node");
-const { sendToGhl } = require("./_lib/ghl");
 const { sendMetaEvent, clientIp, normPhone } = require("./_lib/meta");
 
 let posthog = null;
@@ -14,7 +13,7 @@ function getPostHog() {
 }
 
 // Ontvangt een lead van de landingspagina (quiz + contactformulier), stuurt
-// hem server-side door naar GoHighLevel en bevestigt pas dan `lead_submitted`
+// hem server-side door naar Meta en bevestigt `lead_submitted`
 // in PostHog. Een klik op "Versturen" in de browser is nog geen opgeslagen lead -
 // dat gebeurt pas als dit endpoint 200 teruggeeft.
 module.exports = async (req, res) => {
@@ -62,11 +61,7 @@ module.exports = async (req, res) => {
     return res.status(400).json({ ok: false, error: "missing_required_fields" });
   }
 
-  // Naar GoHighLevel: event "lead" + status "niet_betaald". De GHL-workflow
-  // start hiermee de opvolging; /api/stripe-webhook stuurt later
-  // "payment_completed" voor wie wel betaalt.
-  const [crm, meta] = await Promise.all([
-    sendToGhl("lead", Object.assign({ event: "lead", payment_status: "niet_betaald", phone_e164: normPhone(lead.phone) ? "+" + normPhone(lead.phone) : null }, lead)),
+  const [meta] = await Promise.all([
     // Meta Conversions API: zelfde event_id als de browser-pixel (lead_<id>) voor deduplicatie.
     sendMetaEvent({
       eventName: "Lead",
@@ -85,8 +80,6 @@ module.exports = async (req, res) => {
       customData: { value: 190, currency: "EUR", content_name: "PromoView Groeisysteem", lead_type: lead.lead_type },
     }),
   ]);
-  const crmOk = crm.ok;
-  const crmError = crm.ok ? null : crm.error;
 
   const ph = getPostHog();
   if (ph) {
@@ -111,18 +104,10 @@ module.exports = async (req, res) => {
         campaign_id: lead.campaign_id,
         campaign_name: lead.campaign_name,
         page_version: lead.page_version,
-        crm_synced: crmOk,
         meta_capi_sent: !!meta.ok,
       },
     });
     await ph.shutdown();
-  }
-
-  if (!crmOk) {
-    // De lead is wel geregistreerd in PostHog (met crm_synced:false) zodat we
-    // een mislukte CRM-sync kunnen zien, maar we melden dit als fout aan de
-    // bezoeker zodat diegene het weet i.p.v. te denken dat we hem bellen.
-    return res.status(502).json({ ok: false, error: crmError });
   }
 
   return res.status(200).json({ ok: true, lead_id: lead.lead_id });

@@ -1,11 +1,10 @@
 const Stripe = require("stripe");
 const { PostHog } = require("posthog-node");
 const { sendMetaEvent, clientIp } = require("./_lib/meta");
-const { sendToGhl } = require("./_lib/ghl");
 const { sendSlack } = require("./_lib/slack");
 const { boardEvent, paymentCard } = require("./_lib/board");
 const { paySession, claimOnceSub, findSubByLead } = require("./_lib/paypro");
-const { nativeSession, claimOnce, slackPaymentText, withLinkMetadata, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
+const { nativeSession, claimOnce, slackPaymentText, withLinkMetadata, sessionProps, amountOf, capturePurchase, contentName } = require("./_lib/payment");
 
 let stripe = null;
 function getStripe() {
@@ -74,11 +73,10 @@ module.exports = async (req, res) => {
     capturePurchase(ph, session, "verify_payment_client");
     if (ph) await ph.shutdown();
 
-    // GoHighLevel "PV - Betaald" en Slack #direct-payment: één keer per betaling.
-    // Wie eerst is (bedankpagina of Stripe-webhook) meldt; de stempel staat in Stripe.
+    // Slack #direct-payment en Trello: één keer per betaling (centrale claim, zie _lib/claim.js).
+    // Wie eerst is (bedankpagina, PayPro- of Stripe-webhook) meldt.
     if (ppData ? await claimOnceSub(ppData.sub) : await claimOnce(s, session)) {
       await Promise.all([
-        sendToGhl("payment", ghlPaymentPayload(session, "bedankt_pagina")),
         sendSlack(slackPaymentText(session)),
         boardEvent(paymentCard(session)),
       ]);

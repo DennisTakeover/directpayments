@@ -1,10 +1,9 @@
 const Stripe = require("stripe");
 const { PostHog } = require("posthog-node");
-const { sendToGhl } = require("./_lib/ghl");
 const { sendMetaEvent } = require("./_lib/meta");
 const { sendSlack } = require("./_lib/slack");
 const { boardEvent, paymentCard, nlDate, euro } = require("./_lib/board");
-const { nativeSession, claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, amountOf, capturePurchase, ghlPaymentPayload, contentName } = require("./_lib/payment");
+const { nativeSession, claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, amountOf, capturePurchase, contentName } = require("./_lib/payment");
 
 let stripe = null;
 function getStripe() {
@@ -44,7 +43,7 @@ const VARIANT_BY_PLAN = { doorlopend: "v7", eenmalig: "v8" };
 //   customer.subscription.trial_will_end, customer.subscription.updated,
 //   customer.subscription.deleted
 //
-// Eerste betaling  -> purchase_completed (PostHog), "PV - Betaald" (GHL), Purchase (Meta)
+// Eerste betaling  -> purchase_completed (PostHog), Purchase (Meta)
 // V7 na 14 dagen   -> trial_converted / subscription_renewed (PostHog), Subscribe (Meta)
 // Opzeggen e.d.    -> subscription_cancel_requested / subscription_cancelled /
 //                     trial_ending / payment_failed (PostHog)
@@ -76,11 +75,9 @@ async function onPaidSession(s, ph, session) {
   session = await withLinkMetadata(s, session);
   capturePurchase(ph, session, "stripe_webhook");
   const cd = session.customer_details || {};
-  // GHL en Slack één keer per betaling (de bedankpagina kan al gemeld hebben).
+  // Slack en Trello één keer per betaling (de bedankpagina kan al gemeld hebben).
   const first = await claimOnce(s, session);
   await Promise.all([
-    // GoHighLevel: contact als betaald markeren (of aanmaken), zodat de juiste opvolging start.
-    first ? sendToGhl("payment", ghlPaymentPayload(session, "stripe_webhook")) : null,
     first ? sendSlack(slackPaymentText(session)) : null,
     first ? boardEvent(paymentCard(session)) : null,
     // Meta: zelfde event_id als bedankt.html en /api/verify-payment -> één aankoop.
@@ -223,7 +220,7 @@ module.exports = async (req, res) => {
   try {
     await handle(s, ph, event);
   } catch (err) {
-    // Niet opnieuw laten proberen door Stripe: dat zou GHL/Meta dubbel kunnen raken.
+    // Niet opnieuw laten proberen door Stripe: dat zou meldingen dubbel kunnen sturen.
     console.error("[stripe-webhook]", event.type, err && err.message);
   }
   if (ph) await ph.shutdown();

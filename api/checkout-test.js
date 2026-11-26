@@ -58,7 +58,7 @@ function buildParams(plan, body, base, settings, minimal) {
   const leadId = clean(body.lead_id, 100).replace(/[^A-Za-z0-9_-]/g, "");
   const email = isEmail(clean(body.email, 200)) ? clean(body.email, 200) : "";
 
-  // Komt terug op de sessie (en via de bedankpagina in PostHog en GoHighLevel).
+  // Komt terug op de sessie (en via de bedankpagina in PostHog).
   const metadata = {};
   const meta = {
     plan,

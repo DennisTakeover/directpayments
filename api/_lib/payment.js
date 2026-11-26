@@ -51,38 +51,11 @@ function capturePurchase(ph, session, source) {
   });
 }
 
-// Payload voor de GoHighLevel-workflow "PV - Betaald".
-function ghlPaymentPayload(session, source) {
-  const cd = session.customer_details || {};
-  const p = sessionProps(session);
-  return {
-    event: "payment_completed",
-    payment_status: "betaald",
-    lead_id: session.client_reference_id || null,
-    email: cd.email || session.customer_email || null,
-    phone: cd.phone || null,
-    name: cd.name || null,
-    insta: p.insta,
-    niche: p.niche || null,
-    doel: p.doel || null,
-    plan: p.plan,
-    product: p.product,
-    lp_variant: p.lp_variant,
-    amount: amountOf(session),
-    currency: session.currency ? String(session.currency).toUpperCase() : "EUR",
-    stripe_session_id: session.id,
-    stripe_customer_id: session.customer || null,
-    stripe_subscription_id: session.subscription || null,
-    paid_at: new Date((session.created || Date.now() / 1000) * 1000).toISOString(),
-    source,
-  };
-}
-
 function contentName(session) {
   return session.metadata && session.metadata.plan ? "PromoView 14 dagen testen" : "PromoView Groeisysteem";
 }
 
-// Eén keer melden per betaling (GoHighLevel en Slack), ook al komen de bedankpagina
+// Eén keer melden per betaling (Slack en Trello), ook al komen de bedankpagina
 // én de Stripe-webhook langs, of laadt de klant de bedankpagina opnieuw. De stempel
 // staat in Stripe zelf, op het abonnement of de betaling.
 async function claimOnce(s, session) {
@@ -152,7 +125,7 @@ async function withLinkMetadata(s, session) {
 
 // Betaling via de eigen betaalstap (/api/pay): er is geen Checkout Session, maar een
 // abonnement met een eerste factuur. Dit maakt er hetzelfde soort object van, zodat
-// PostHog, GoHighLevel, Slack en Meta precies zo werken als bij Stripe Checkout.
+// PostHog, Slack en Meta precies zo werken als bij Stripe Checkout.
 async function nativeSession(s, subId) {
   const sub = await s.subscriptions.retrieve(String(subId), { expand: ["latest_invoice", "customer"] });
   const md = sub.metadata || {};
@@ -178,4 +151,4 @@ async function nativeSession(s, subId) {
   return { sub, paid, session };
 }
 
-module.exports = { nativeSession, claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, sessionProps, amountOf, capturePurchase, ghlPaymentPayload, contentName };
+module.exports = { nativeSession, claimOnce, localPhone, slackPaymentText, withLinkMetadata, stableUuid, sessionProps, amountOf, capturePurchase, contentName };

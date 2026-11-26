@@ -68,7 +68,7 @@ async function webhookSecret() {
 }
 
 // Abonnement + klant van PayPro omgezet naar dezelfde vorm als een Stripe Checkout Session,
-// zodat PostHog, Slack, GoHighLevel, Meta en Trello één codepad houden.
+// zodat PostHog, Slack, Meta en Trello één codepad houden.
 async function paySession(subId) {
   const sub = await pp("GET", "/subscriptions/" + encodeURIComponent(subId));
   const md = sub.metadata || {};

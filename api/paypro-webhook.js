@@ -1,15 +1,14 @@
 const { PostHog } = require("posthog-node");
-const { sendToGhl } = require("./_lib/ghl");
 const { sendMetaEvent } = require("./_lib/meta");
 const { sendSlack } = require("./_lib/slack");
 const { boardEvent, paymentCard, euro, nlDate } = require("./_lib/board");
-const { stableUuid, capturePurchase, ghlPaymentPayload, slackPaymentText, contentName, amountOf } = require("./_lib/payment");
+const { stableUuid, capturePurchase, slackPaymentText, contentName, amountOf } = require("./_lib/payment");
 const { pp, OFFER, verifySignature, webhookSecret, paySession, claimOnceSub } = require("./_lib/paypro");
 
 // PayPro stuurt hier events heen (webhook "PromoView landing" in PayPro, aangemaakt via
 // /api/paypro-setup). Alleen abonnementen uit de eigen betaalstap (metadata.pv = "1") tellen.
 //
-//   subscription.started  eerste betaling (€49) binnen -> aankoop: PostHog, GHL, Slack, Meta, Trello
+//   subscription.started  eerste betaling (€49) binnen -> aankoop: PostHog, Slack, Meta, Trello
 //   payment.paid          betaling op dag 14 en daarna maandelijks -> doorbetaald / maandbetaling
 //   payment.failed        incasso mislukt -> Slack + rood label op de kaart
 //   subscription.canceled abonnement gestopt -> kaart naar "Gestopt"
@@ -60,7 +59,6 @@ async function onStarted(ph, subId) {
   capturePurchase(ph, session, "paypro_webhook");
   const first = await claimOnceSub(sub);
   await Promise.all([
-    first ? sendToGhl("payment", ghlPaymentPayload(session, "paypro_webhook")) : null,
     first ? sendSlack(slackPaymentText(session)) : null,
     first ? boardEvent(paymentCard(session)) : null,
     sendMetaEvent({
