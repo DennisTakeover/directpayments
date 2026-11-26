@@ -2,6 +2,7 @@
 // /api/verify-payment (bedankpagina) en /api/stripe-webhook (Stripe zelf).
 // Beide mogen afgaan voor dezelfde betaling: PostHog en Meta tellen hem één keer.
 const crypto = require("crypto");
+const { claim } = require("./claim");
 
 // PostHog accepteert alleen echte UUID's. Afgeleid van de Stripe-id, zodat de
 // bedankpagina en de webhook exact dezelfde uuid sturen en PostHog ze samenvoegt.
@@ -85,6 +86,8 @@ function contentName(session) {
 // én de Stripe-webhook langs, of laadt de klant de bedankpagina opnieuw. De stempel
 // staat in Stripe zelf, op het abonnement of de betaling.
 async function claimOnce(s, session) {
+  const central = await claim(`${session.id}:pv_gemeld`, "stripe");
+  if (central !== null) return central;
   try {
     const subId = typeof session.subscription === "string" ? session.subscription : session.subscription && session.subscription.id;
     const piId = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent && session.payment_intent.id;

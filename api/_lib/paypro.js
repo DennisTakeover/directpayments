@@ -1,6 +1,7 @@
 // PayPro API (https://docs.paypro.nl). Nodig in Vercel: PAYPRO_API_KEY.
 // Bedragen zijn in centen INCLUSIEF btw (veld `vat` geeft het percentage).
 const crypto = require("crypto");
+const { claim } = require("./claim");
 
 const API = process.env.PAYPRO_API_URL || "https://api.paypro.nl";
 const WEBHOOK_PATH = "/api/paypro-webhook";
@@ -98,6 +99,13 @@ async function paySession(subId) {
 // Eén keer melden per betaling: stempel in de metadata van het abonnement.
 async function claimOnceSub(sub, field) {
   const key = field || "pv_gemeld";
+  // Eerst de centrale, sequentiële check in Make (zie _lib/claim.js); die is betrouwbaar bij
+  // gelijktijdige verzoeken. De stempel in de metadata blijft als vastlegging en vangnet.
+  const central = await claim(`${sub.id}:${key}`, key);
+  if (central !== null) {
+    if (central) pp("PATCH", "/subscriptions/" + encodeURIComponent(sub.id), { metadata: Object.assign({}, sub.metadata || {}, { [key]: new Date().toISOString() }) }).catch(() => null);
+    return central;
+  }
   try {
     const fresh = await pp("GET", "/subscriptions/" + encodeURIComponent(sub.id));
     const md = fresh.metadata || {};

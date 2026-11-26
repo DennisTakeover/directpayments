@@ -319,6 +319,15 @@ async function slackTest(req, res) {
     const second = await boardEvent({ event: "onboarding", key: card.key, list: "onboarding", label: "tfa", comment: "📝 TEST: onboarding ingevuld (kaart mag weg)." });
     return res.status(200).json({ ok: first.ok && second.ok, key: card.key, first, second });
   }
+  // ?slack_test=1&claim=1: 3 gelijktijdige "eerste melding"-claims voor dezelfde sleutel;
+  // er hoort er precies één true te zijn (zie _lib/claim.js).
+  if (req.query.claim) {
+    const { claim } = require("./_lib/claim");
+    const key = "test_" + Date.now().toString(36);
+    const res3 = await Promise.all([claim(key, "test1"), claim(key, "test2"), claim(key, "test3")]);
+    const later = await claim(key, "test4");
+    return res.status(200).json({ key, gelijktijdig: res3, later });
+  }
   // ?slack_test=1&profielcheck=<instagram>: test van de AI-profielcheck (Make) op een echt profiel.
   if (req.query.profielcheck) {
     const { sendProfielcheck } = require("./_lib/profielcheck");
