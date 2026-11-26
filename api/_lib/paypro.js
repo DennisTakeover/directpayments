@@ -91,7 +91,9 @@ async function paySession(subId) {
     customer_details: { name, email: cust.email || null, phone: cust.phone_number || null },
     custom_fields: md.insta ? [{ key: "instagram", text: { value: md.insta } }] : [],
     metadata: md,
-    created: Math.floor(new Date(sub.start_at || sub.created_at || Date.now()).getTime() / 1000),
+    // Moment van de bevestiging. start_at is bij PayPro alleen een datum (00:00), waardoor de
+    // aankoop in PostHog vóór het bezoek viel en de funnel hem niet meetelde.
+    created: Math.floor(Date.now() / 1000),
   };
   return { sub, paid, session };
 }
